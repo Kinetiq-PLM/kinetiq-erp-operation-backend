@@ -38,6 +38,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     "feature_document_handling",
+    "feature_DeliveryApproval",
+    "feature_asset_removal",
+    "feature_delivery_receipt",
+    "feature_internal_transfer",
+    "feature_update_delivery_approval",
+    "feature_goods_tracking",
+    "feature_get_purchase_order",
+    "feature_update_documents",
+    "feature_get_reference_data",
     "rest_framework",
     "corsheaders",    
     "django_cognito_jwt"
@@ -89,8 +98,12 @@ WSGI_APPLICATION = 'operation.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'Kinetiq-DB-Schema',
+        'USER': 'postgres',
+        'PASSWORD': '123',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
