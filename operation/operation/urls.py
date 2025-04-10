@@ -1,22 +1,32 @@
-"""
-URL configuration for operation project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.1/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+
+from feature_asset_removal.urls import router as asset_removal_router
+from feature_delivery_receipt.urls import router as delivery_receipt_router
+from feature_get_purchase_order.urls import router as purchase_order_router
+
+from feature_goods_tracking.urls import router as goods_tracking_router
+from feature_internal_transfer.urls import router as internal_transfer_router
+from feature_update_delivery_approval.urls import router as update_delivery_approval
+
+admin_router = DefaultRouter()
+admin_router.registry.extend(asset_removal_router.registry)
+admin_router.registry.extend(delivery_receipt_router.registry)
+admin_router.registry.extend(purchase_order_router.registry)
+
+admin_router.registry.extend(goods_tracking_router.registry)
+admin_router.registry.extend(internal_transfer_router.registry)
+admin_router.registry.extend(update_delivery_approval.registry)
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
+    path("", include("feature_asset_removal.urls")),
+    path("", include("feature_delivery_receipt.urls")),
+    path("", include("feature_get_purchase_order.urls")),
+
+    path("", include("feature_goods_tracking.urls")),
+    path("", include("feature_internal_transfer.urls")),
+    path("", include("feature_update_delivery_approval.urls")),
+
 ]
