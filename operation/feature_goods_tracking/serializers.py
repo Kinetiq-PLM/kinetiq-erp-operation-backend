@@ -1,4 +1,7 @@
 from rest_framework import serializers
+from feature_get_reference_data.models import *
+from feature_get_reference_data.serializers import *
+
 from .models import *
 
 class ProductCostSerializer(serializers.ModelSerializer):
@@ -6,7 +9,7 @@ class ProductCostSerializer(serializers.ModelSerializer):
         model = ProductCostData
         fields = "__all__"  
 
-class VendorDataSerializer(serializers.ModelSerializer):
+"""class VendorDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = VendorData
         fields = "__all__"  
@@ -23,7 +26,7 @@ class EmployeeDataSerializer(serializers.ModelSerializer):
         fields = "__all__"  #
     def get_employee_name(self, obj):
         if obj.first_name and obj.last_name:
-            return f"{obj.first_name} {obj.last_name}"
+            return f"{obj.first_name} {obj.last_name}"""
 
 class MaterialSerializer(serializers.ModelSerializer):
     class Meta:
@@ -109,8 +112,8 @@ class DocumentItemsSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
            
 class GoodsTrackingDataSerializer(serializers.ModelSerializer):
-    vendor_name = serializers.CharField(source="vendor_code.vendor_name")
-    contact_person = serializers.CharField(source="vendor_code.contact_person")
+    vendor_name = serializers.SerializerMethodField()
+    contact_person = serializers.SerializerMethodField()
     employee_name = serializers.SerializerMethodField()
     dept_name = serializers.SerializerMethodField()
     document_items = DocumentItemsSerializer(many=True) 
@@ -119,7 +122,15 @@ class GoodsTrackingDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = GoodsTrackingData
         fields = "__all__"  
-        
+    def get_vendor_name(self, obj):
+        # Ensure that vendor is not None before accessing vendor_name
+        if obj.vendor_code:
+            return obj.vendor_code.vendor_name
+        return None
+    def get_contact_person(self, obj):
+        if obj.vendor_code:
+            return obj.vendor_code.contact_person
+        return None
     def get_employee_name(self, obj):
         if obj.employee_id:  
             return f"{obj.employee_id.first_name} {obj.employee_id.last_name}"

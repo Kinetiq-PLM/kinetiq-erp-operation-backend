@@ -1,7 +1,9 @@
 from django.shortcuts import render
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from rest_framework import viewsets
-from serializers import *
-from models import *
+from .serializers import *
+from .models import *
 
 # Create your views here.
 class VendorDataViewSet(viewsets.ReadOnlyModelViewSet):
@@ -15,4 +17,15 @@ class DepartmentDataViewSet(viewsets.ReadOnlyModelViewSet):
 class EmployeeDataViewSet(viewsets.ReadOnlyModelViewSet):
     """View to retrieve Vendor Data"""
     queryset = EmployeeData.objects.select_related("dept_id").filter(dept_id__dept_name="Operations")
+    
     serializer_class = EmployeeDataSerializer
+class SupplierView(APIView):
+    def get(self, request): 
+        vendor_data = VendorDataSerializer(VendorData.objects.all(), many=True)
+        employee_data = EmployeeDataSerializer(
+            EmployeeData.objects.filter(dept_id__dept_name="Operations"), many=True
+        )
+        return Response({
+            "vendors": vendor_data.data,
+            "employees": employee_data.data
+        })

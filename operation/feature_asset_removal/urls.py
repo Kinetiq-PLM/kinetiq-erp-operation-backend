@@ -4,8 +4,8 @@ from .views import *
 
 
 router = DefaultRouter()
-router.register(r'AssetRemoval', AssetRemovalView) 
-router.register(r'sendToManagement', sendToManagementView) 
+router.register(r'item-removal', AssetRemovalView) 
+router.register(r'send-to-management', sendToManagementView) 
 
 # Define the URL patterns
 urlpatterns = [

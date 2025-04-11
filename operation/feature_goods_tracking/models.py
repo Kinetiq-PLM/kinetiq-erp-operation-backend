@@ -1,4 +1,5 @@
 from django.db import models
+from feature_get_reference_data.models import *
 import datetime
 from decimal import Decimal
 # Create your models here.
@@ -16,7 +17,7 @@ class ProductCostData(models.Model):
     def __str__(self):
         return self.bom_id
         
-class VendorData(models.Model):
+"""class VendorData(models.Model):
     vendor_code = models.CharField(max_length=255, primary_key=True)
     vendor_name = models.CharField(max_length=255)
     contact_person = models.CharField(max_length=255)
@@ -50,7 +51,7 @@ class EmployeeData(models.Model):
         ordering = ["employee_id"]
         
     def __str__(self):
-        return self.employee_id
+        return self.employee_id"""
 
 class MaterialData(models.Model):
     material_id = models.CharField(max_length=255,primary_key=True)
@@ -102,7 +103,12 @@ class ProductDocuItemData(models.Model):
     def __str__(self):
         return self.productdocu_id
 
-
+def get_default_employee():
+    try:
+        return EmployeeData.objects.get(employee_id="E001")
+    except EmployeeData.DoesNotExist:
+        # Return just the ID (string) instead of an EmployeeData object
+        return "E001"
 class GoodsTrackingData(models.Model):
     status_choice = [("Open", "Open"), ("Closed", "Closed"), ("Cancelled", "Cancelled"), ("Draft", "Draft")]
     document_id = models.CharField(max_length=255, primary_key=True)
@@ -127,7 +133,8 @@ class GoodsTrackingData(models.Model):
         db_column="employee_id", 
         on_delete=models.SET_NULL, 
         null=True, 
-        blank=True
+        blank=True,
+        default=get_default_employee 
     ) #Owner
     #Document Details
     delivery_date = models.DateField(default=datetime.date.today)

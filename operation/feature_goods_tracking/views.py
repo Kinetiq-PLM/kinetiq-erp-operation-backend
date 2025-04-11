@@ -1,6 +1,5 @@
 from rest_framework import status
 from rest_framework import viewsets
-from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import ValidationError
@@ -14,18 +13,15 @@ class ProductCostDataView(viewsets.ReadOnlyModelViewSet):
     queryset = ProductCostData.objects.all()
     serializer_class = ProductCostSerializer
     
-class VendorDataViewSet(viewsets.ReadOnlyModelViewSet):
-    """View to retrieve Vendor Data"""
+"""class VendorDataViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = VendorData.objects.all()
     serializer_class = VendorDataSerializer
 class DepartmentDataViewSet(viewsets.ReadOnlyModelViewSet):
-    """View to retrieve Vendor Data"""
     queryset = DepartmentData.objects.all()
     serializer_class = DepartmentDataSerializer
 class EmployeeDataViewSet(viewsets.ReadOnlyModelViewSet):
-    """View to retrieve Vendor Data"""
     queryset = EmployeeData.objects.select_related("dept_id").filter(dept_id__dept_name="Operations")
-    serializer_class = EmployeeDataSerializer
+    serializer_class = EmployeeDataSerializer"""
     
 class MaterialView(viewsets.ReadOnlyModelViewSet):
     queryset = MaterialData.objects.all()
@@ -53,7 +49,7 @@ class ProductDocuItemView(viewsets.ReadOnlyModelViewSet):
 
         return Response(serializer.data)
     
-class SupplierView(APIView):
+"""class SupplierView(APIView):
     def get(self, request):  # Using 'get' instead of 'list'
         vendor_data = VendorDataSerializer(VendorData.objects.all(), many=True)
         employee_data = EmployeeDataSerializer(
@@ -62,7 +58,7 @@ class SupplierView(APIView):
         return Response({
             "vendors": vendor_data.data,
             "employees": employee_data.data
-        })
+        })"""
         
 class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
     queryset = GoodsTrackingData.objects.all()
