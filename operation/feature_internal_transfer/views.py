@@ -12,24 +12,38 @@ class InternalTransferDeliveryRequestView(viewsets.ModelViewSet):
     queryset = InternalTransferDeliveryRequestData.objects.all()
     serializer_class = InternalTransferDeliveryRequestSerializer
 
-class updateDRWarehouseView(viewsets.ModelViewSet):
-    queryset = updateDRWarehouseData.objects.all()
+class updateDeliveryRequestView(viewsets.ModelViewSet):
+    queryset = updateDeliveryRequestData.objects.all()
     serializer_class = updateDRWarehouseSerializer
     
     def update(self, request, pk=None):
         try:
-            queryset = updateDRWarehouseData.objects.get(external_id=pk)
+            queryset = updateDeliveryRequestData.objects.get(content_id=pk)
             data = request.data
 
-            queryset.warehouse_id = data.get('approval_status', queryset.approval_status)
+            queryset.warehouse_id = data.get('warehouse_id', queryset.warehouse_id)
+            queryset.delivery_request_id = data.get('delivery_id', queryset.delivery_request_id)
             queryset.save()
 
             return Response({"message": "Delivery approval updated successfully"}, status=status.HTTP_200_OK)
-        except updateDRWarehouseData.DoesNotExist:
+        except updateDeliveryRequestData.DoesNotExist:
             return Response({"error": "Record not found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-    
+
+class sendToDistributionView(viewsets.ModelViewSet):
+    queryset = sendToDistributionData.objects.all()
+    serializer_class = sendToDistributionSerializer
+    def create(self, request):
+        try:
+            serializer = self.serializer_class(data=request.data)
+            if serializer.is_valid():
+                serializer.save() 
+                return Response({"message": "Inserted successfully", "data": serializer.data}, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 class getWarehouseIDView(viewsets.ModelViewSet):
     queryset = getWarehouseIDData.objects.all()
     serializer_class = getWarehouseIDSerializer
