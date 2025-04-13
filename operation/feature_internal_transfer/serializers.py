@@ -23,7 +23,12 @@ class getWarehouseIDSerializer(serializers.ModelSerializer):
         model = getWarehouseIDData
         fields = '__all__'
         
-class InternalTransferReworkOrderSerializer(serializers.ModelSerializer):
+class ProductionOrderSerializer(serializers.ModelSerializer):
     class Meta:
-        model = InternalTransferReworkOrderData
+        model = ProductionOrderData
         fields = '__all__'
+class ExternalModuleProductOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExternalModuleProductOrderData
+        fields = '__all__'
+        read_only_fields = ['external_id']

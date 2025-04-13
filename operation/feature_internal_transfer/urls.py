@@ -7,7 +7,7 @@ router.register(r'internal-transfer-delivery-request', InternalTransferDeliveryR
 router.register(r'update-delivery-request', updateDeliveryRequestView) 
 router.register(r'send-to-distribution', sendToDistributionView)
 router.register(r'get-warehouseID', getWarehouseIDView) 
-router.register(r'InternalTransferReworkOrder', InternalTransferReworkOrderView) 
+router.register(r'external-modules', ExternalModuleProductView, basename='external-module')
 
 # Define the URL patterns
 urlpatterns = [

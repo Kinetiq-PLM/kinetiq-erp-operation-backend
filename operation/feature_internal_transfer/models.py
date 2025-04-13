@@ -1,4 +1,5 @@
 from django.db import models
+
 import datetime
 
 # Create your models here.
@@ -39,10 +40,28 @@ class getWarehouseIDData(models.Model):
     class Meta:
             managed = False
             db_table = '"admin"."warehouse"'
-            
-class InternalTransferReworkOrderData(models.Model):
-    external_id = models.CharField(max_length=255, primary_key=True)
-    product_id = models.CharField(max_length=255)
-    start_date = models.DateField()
+
+#Rework Order
+#order id, reason for rework, rework, quantity
+class ProductionOrderData(models.Model):
+    production_order_detail_id = models.CharField(max_length=255, primary_key=True, editable = False)
+    actual_quantity = models.PositiveIntegerField()
+    rework_required = models.BooleanField(default=False)
     rework_notes = models.CharField(max_length=255)
-    selling_price = models.DecimalField(decimal_places=4,max_digits=10)
+    class Meta:
+        db_table = '"production"."production_orders_details"'
+        managed = False
+
+class ExternalModuleProductOrderData(models.Model):
+    external_id = models.CharField(max_length=255, primary_key=True)
+    production_order_detail_id = models.ForeignKey(
+        ProductionOrderData, 
+        db_column="production_order_detail_id", 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True
+    )
+    rework_quantity = models.PositiveIntegerField()
+    reason_rework = models.CharField(max_length=255)
+
+    
