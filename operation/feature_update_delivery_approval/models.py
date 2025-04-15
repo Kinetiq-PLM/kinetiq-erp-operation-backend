@@ -5,8 +5,7 @@ from django.db.models import Case, When, Value, IntegerField
 #class DeliveryApprovalData(models.Model):
 class DeliveryApprovalData(models.Model):
     approval_choice = [("Approved", "Approved"), ("Pending", "Pending"), ("Rejected", "Rejected")]
-    external_id = models.CharField(max_length=255, primary_key=True, unique=True)
-    approval_request_id = models.CharField(max_length=255)
+    approval_request_id = models.CharField(max_length=255, primary_key=True)
     request_date = models.DateField()
     approval_status = models.CharField(choices=approval_choice)
     approval_date = models.DateField()
@@ -14,7 +13,7 @@ class DeliveryApprovalData(models.Model):
     
     class Meta:
         managed = False
-        db_table = '"operations"."v_delivery_approval_view"'
+        db_table = '"distribution"."logistics_approval_request"'
         ordering = [
             Case(
                 When(approval_status="Pending", then=Value(1)),

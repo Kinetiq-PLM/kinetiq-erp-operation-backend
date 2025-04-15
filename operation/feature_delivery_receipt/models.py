@@ -41,3 +41,14 @@ class DeliveryReworkOrderData(models.Model):
         
     def __str__(self):
         return self.external_id
+    
+class ExternalGoodsIssueData(models.Model):
+    external_id = models.CharField(max_length=255, primary_key=True)
+    goods_issue_id = models.CharField(max_length=255)
+    issue_date = models.DateField()
+    issued_by = models.CharField(max_length=255)
+    product_id = models.CharField(max_length=255)
+    quantity = models.PositiveIntegerField()
+    class Meta:
+        managed = False
+        db_table = '"operations"."v_external_goods_issue_view"'

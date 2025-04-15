@@ -15,3 +15,7 @@ class DeliveryReworkOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeliveryReworkOrderData
         fields = '__all__' 
+class ExternalGoodsIssueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExternalGoodsIssueData
+        fields = '__all__'

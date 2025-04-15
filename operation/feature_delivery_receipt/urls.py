@@ -6,6 +6,7 @@ router = DefaultRouter()
 router.register(r'DeliveryReworkOrder', DeliveryReworkOrderView) 
 router.register(r'DeliveryReceipt', DeliveryReceiptView) 
 router.register(r'BillingReceipt', BillingReceiptView) 
+router.register(r'GoodsIssue', ExternalGoodsIssueView) 
 
 
 # Define the URL patterns

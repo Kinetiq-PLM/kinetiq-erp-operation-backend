@@ -71,10 +71,6 @@ class ExternalModuleProductView(viewsets.ModelViewSet):
 
         try:
             with connection.cursor() as cursor:
-                # Disable the trigger temporarily
-                cursor.execute("""
-                    ALTER TABLE operations.document_items DISABLE TRIGGER trigger_grpo_journal;
-                """)
 
                 # Get all existing production_order_detail_ids from external module table
                 cursor.execute("""
@@ -128,14 +124,6 @@ class ExternalModuleProductView(viewsets.ModelViewSet):
                 'message': str(e)
             }, status=500)
 
-        finally:
-            # Re-enable the trigger
-            with connection.cursor() as cursor:
-                cursor.execute("""
-                    ALTER TABLE operations.document_items ENABLE TRIGGER trigger_grpo_journal;
-                """)
-
-            enable_trigger()  # Re-enable any triggers outside the DB
 
     @action(detail=False, methods=['get'], url_path='rework-order')
     def fetch_all_joined(self, request):
