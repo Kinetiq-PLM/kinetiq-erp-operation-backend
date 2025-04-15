@@ -1,0 +1,158 @@
+CREATE OR REPLACE VIEW operations.v_internal_delivery_request_view AS
+SELECT 
+    em.external_id,
+    COALESCE(pod.production_order_detail_id, em.project_resources_id) AS delivery_id,
+    CASE
+        WHEN pod.production_order_detail_id IS NOT NULL THEN 'Product'
+        WHEN ep.project_resources_id IS NOT NULL THEN 'Material'
+        ELSE NULL
+    END AS delivery_type,
+    CASE
+        WHEN pod.production_order_detail_id IS NOT NULL THEN 'Inventory'
+        WHEN ep.project_resources_id IS NOT NULL THEN 'Production'
+        ELSE NULL
+    END AS module_name,
+    di.warehouse_id,
+    di.request_date,
+    di.content_id
+FROM 
+    operations.external_module em
+LEFT JOIN production.production_orders_details pod
+    ON pod.production_order_detail_id = em.production_order_detail_id
+LEFT JOIN project_management.external_project_cost_management ep 
+    ON em.project_resources_id = ep.project_resources_id
+INNER JOIN operations.document_items di
+    ON di.external_id = em.external_id;
+
+
+--View for Delivery Receipt
+CREATE VIEW operations.v_delivery_receipt_view AS
+SELECT 
+	em.external_id,
+	dr.delivery_receipt_id,
+	dr.delivery_date,
+	dr.total_amount
+FROM 
+    operations.external_module em
+INNER JOIN 
+    distribution.delivery_receipt dr
+ON 
+    em.delivery_receipt_id = dr.delivery_receipt_id;
+
+--View for Billing Receipt w Delivery Receipt
+CREATE VIEW operations.v_delivery_billing_receipt_view AS
+SELECT 
+	em.external_id,
+	br.billing_receipt_id,
+	br.delivery_receipt_id,
+	dr.delivery_date,
+	br.total_receipt
+FROM 
+    operations.external_module em
+INNER JOIN 
+    distribution.billing_receipt br
+ON 
+    em.billing_receipt_id = br.billing_receipt_id
+INNER JOIN
+	distribution.delivery_receipt dr
+ON
+	br.delivery_receipt_id = dr.delivery_receipt_id;
+
+
+--View for Delivery Rework Order
+CREATE VIEW operations.v_delivery_rework_order_view AS
+SELECT 
+	em.external_id,
+	ro.rework_id,
+	ro.failed_shipment_id,
+	ro.rework_status,
+	ro.rework_date
+FROM 
+    operations.external_module em
+INNER JOIN 
+    distribution.rework_order ro
+ON 
+    em.rework_id = ro.rework_id;
+
+--View for delivery approval
+CREATE VIEW operations.v_delivery_approval_view AS
+SELECT 
+    em.external_id,
+    em.approval_request_id,
+    lar.request_date,
+    lar.approval_status,
+    lar.approval_date,
+    lar.approved_by
+FROM 
+    operations.external_module em
+INNER JOIN 
+    distribution.logistics_approval_request lar
+ON 
+    em.approval_request_id = lar.approval_request_id;
+
+
+--View for item removal
+CREATE VIEW operations.v_item_removal_view AS
+SELECT 
+	em.external_id,
+    dr.deprecation_report_id,
+    COALESCE(pdi.product_id, ii.material_id) AS item_id,
+    COALESCE(pr.product_name, rm.material_name) AS item_name,
+    dr.reported_date,
+    CASE 
+        WHEN ma.status = 'approved' THEN 'Approved'
+        WHEN ma.status = 'rejected' THEN 'Rejected'
+        ELSE dr.deprecation_status
+    END AS deprecation_status
+FROM 
+    operations.external_module em
+INNER JOIN 
+    inventory.deprecation_report dr
+ON 
+    em.deprecation_report_id = dr.deprecation_report_id
+LEFT JOIN
+    inventory.inventory_item ii
+        ON ii.inventory_item_id = dr.inventory_item_id
+LEFT JOIN
+    operations.product_document_items pdi
+        ON pdi.productdocu_id = ii.productdocu_id
+LEFT JOIN
+    admin.products pr
+        ON pr.product_id = pdi.product_id
+LEFT JOIN
+    admin.raw_materials rm
+        ON rm.material_id = ii.material_id
+LEFT JOIN
+    management.management_approvals ma
+        ON ma.external_id = em.external_id
+WHERE 
+    NOT EXISTS (
+        SELECT 1 
+        FROM management.management_approvals ma 
+        WHERE ma.external_id = em.external_id 
+        AND ma.status = 'pending'
+    );
+
+
+--Product details view
+CREATE OR REPLACE VIEW operations.v_product_details_view AS
+SELECT 
+  boms.bom_id,
+  pma.product_id,
+  pod.cost_of_production,
+  pod.miscellaneous_costs
+FROM 
+  mrp.product_mats pma
+INNER JOIN
+  mrp.bill_of_materials boms
+ON
+  boms.product_mats_id = pma.product_mats_id
+INNER JOIN
+  production.production_orders_header poh
+ON 
+  poh.bom_id = boms.bom_id
+INNER JOIN
+  production.production_orders_details pod
+ON 
+  pod.production_order_id = poh.production_order_id;
+
