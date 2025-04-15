@@ -51,15 +51,6 @@ class getWarehouseIDView(viewsets.ModelViewSet):
     queryset = getWarehouseIDData.objects.all()
     serializer_class = getWarehouseIDSerializer
     
-        
-def disable_trigger():
-    with connection.cursor() as cursor:
-        cursor.execute("ALTER TABLE operations.external_module DISABLE TRIGGER trigger_external_module_update;")
-
-def enable_trigger():
-    with connection.cursor() as cursor:
-        cursor.execute("ALTER TABLE operations.external_module ENABLE TRIGGER trigger_external_module_update;")
-
 
 class ExternalModuleProductView(viewsets.ModelViewSet):
     queryset = ExternalModuleProductOrderData.objects.all()
@@ -67,7 +58,6 @@ class ExternalModuleProductView(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post', 'get'], url_path='sync-production')
     def sync_production(self, request):
-        disable_trigger()
 
         try:
             with connection.cursor() as cursor:

@@ -131,7 +131,7 @@ class GoodsTrackingData(models.Model):
     )
     #Main GT UI
     transaction_id = models.CharField(max_length=255, null=False)
-    document_no = models.CharField(max_length=255, null=False)
+    document_no = models.CharField(max_length=255)
     status = models.TextField(choices=status_choice, default="Draft")
     posting_date = models.DateField(default=datetime.date.today, editable=False)
     transaction_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
