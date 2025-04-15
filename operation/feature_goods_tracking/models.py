@@ -16,18 +16,7 @@ class ProductCostData(models.Model):
         
     def __str__(self):
         return self.bom_id
-        
-"""class VendorData(models.Model):
-    vendor_code = models.CharField(max_length=255, primary_key=True)
-    vendor_name = models.CharField(max_length=255)
-    contact_person = models.CharField(max_length=255)
-    class Meta:
-        managed = False
-        db_table = '"admin"."vendor"'
-        ordering = ["vendor_code"]
-        
-    def __str__(self):
-        return self.vendor_code
+     
 
 class DepartmentData(models.Model):
     dept_id = models.CharField(max_length=255, primary_key=True)
@@ -51,7 +40,7 @@ class EmployeeData(models.Model):
         ordering = ["employee_id"]
         
     def __str__(self):
-        return self.employee_id"""
+        return self.employee_id
 
 class MaterialData(models.Model):
     material_id = models.CharField(max_length=255,primary_key=True)
@@ -68,6 +57,7 @@ class AssetData(models.Model):
     asset_id = models.CharField(max_length=255, primary_key=True)
     asset_name = models.CharField(max_length=255)
     purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
+    purchase_date = models.DateField()
     class Meta:
         managed = False
         db_table = '"admin"."assets"'
@@ -84,6 +74,14 @@ class ProductData(models.Model):
         db_table = '"admin"."products"'
     def __str__(self):
         return self.product_id
+    
+class SerialTrackingData(models.Model):
+    serial_id = models.CharField(primary_key=True, editable=False, max_length=255)
+    serial_no = models.CharField(max_length=255)
+    class Meta:
+        managed = False
+        db_table = '"operations"."serial_tracking"'
+        ordering = ["serial_no"]
 
 class ProductDocuItemData(models.Model):
     productdocu_id = models.CharField(max_length=255, primary_key=True)
@@ -109,10 +107,28 @@ def get_default_employee():
     except EmployeeData.DoesNotExist:
         # Return just the ID (string) instead of an EmployeeData object
         return "E001"
+class SalesInvoiceData(models.Model):
+    invoice_id = models.CharField(max_length=255, primary_key=True)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    invoice_date = models.DateField()
+    class Meta:
+        managed = False
+        db_table = '"sales"."sales_invoices"'
+    def __str__(self):
+        return self.invoice_id
+        
 class GoodsTrackingData(models.Model):
     status_choice = [("Open", "Open"), ("Closed", "Closed"), ("Cancelled", "Cancelled"), ("Draft", "Draft")]
     document_id = models.CharField(max_length=255, primary_key=True)
     document_type = models.CharField(max_length=255, null=False)
+    ar_credit_memo =models.CharField(max_length=255)
+    invoice_id = models.ForeignKey(
+        SalesInvoiceData, 
+        db_column="invoice_id", 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True
+    )
     #Main GT UI
     transaction_id = models.CharField(max_length=255, null=False)
     document_no = models.CharField(max_length=255, null=False)
@@ -141,7 +157,7 @@ class GoodsTrackingData(models.Model):
     document_date = models.DateField(default=datetime.date.today)
     #Cost Details    
     initial_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    discount_rate = models.DecimalField(max_digits=3, decimal_places=2)
+    discount_rate = models.DecimalField(max_digits=5, decimal_places=2)
     discount_amount = models.DecimalField(max_digits=10, decimal_places=2)
     freight = models.DecimalField(max_digits=10, decimal_places=2)
     tax_rate = models.DecimalField(max_digits=5, decimal_places=2)
@@ -158,6 +174,8 @@ class GoodsTrackingData(models.Model):
     
 class DocumentItems(models.Model):
     content_id = models.CharField(max_length=255, primary_key=True) 
+    batch_no = models.CharField(max_length=255, auto_created=True, unique=True)
+
     document_id = models.ForeignKey(
         GoodsTrackingData, 
         db_column="document_id", 
@@ -190,6 +208,14 @@ class DocumentItems(models.Model):
         blank=True,
         related_name="document_product_items"
     ) 
+    serial_id = models.OneToOneField(
+        SerialTrackingData, 
+        db_column="serial_id", 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name="document_serial_id"
+    )
     quantity = models.IntegerField(default=0)
     total = models.DecimalField(max_digits=10, decimal_places=2)
     batch_no = models.CharField(max_length=255)
@@ -204,4 +230,3 @@ class DocumentItems(models.Model):
         return self.content_id
     
 
-    

@@ -29,3 +29,17 @@ class SupplierView(APIView):
             "vendors": vendor_data.data,
             "employees": employee_data.data
         })
+class ItemView(APIView):
+    def get(self, request): 
+        products_data = ProductDataSerializer(ProductData.objects.all(), many=True)
+        material_data = MaterialDataSerializer(MaterialData.objects.all(), many=True)
+        asset_data = AssetDataSerializer(AssetData.objects.all(), many=True)
+        return Response({
+            "products": products_data.data,
+            "material": material_data.data,
+            "asset": asset_data.data
+        })
+class CustomerView(viewsets.ReadOnlyModelViewSet):
+    queryset = CustomerData.objects.all()
+    
+    serializer_class = CustomerDataSerializer

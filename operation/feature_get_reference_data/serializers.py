@@ -19,3 +19,21 @@ class EmployeeDataSerializer(serializers.ModelSerializer):
     def get_employee_name(self, obj):
         if obj.first_name and obj.last_name:
             return f"{obj.first_name} {obj.last_name}"
+        
+class ProductDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductData  
+        fields = "__all__"  #
+class MaterialDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MaterialData  
+        fields = "__all__"  #
+class AssetDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AssetData  
+        fields = "__all__"  
+
+class CustomerDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomerData
+        fields = "__all__"

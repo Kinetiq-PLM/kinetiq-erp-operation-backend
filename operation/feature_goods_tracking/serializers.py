@@ -43,14 +43,25 @@ class ProductSerializer(serializers.ModelSerializer):
         model = ProductData
         fields = "__all__"
         
+class SerialTrackingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SerialTrackingData
+        fields = "__all__"
+class SalesInvoiceDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalesInvoiceData
+        fields = "__all__"
 class ProductDocuItemSerializer(serializers.ModelSerializer):
-    product_name = serializers.CharField(source="product_id.product_name")
-    #selling_price = serializers.CharField(source="product_id.selling_price")
-    #unit of measure
-    #cost_per_unit / purchased price
+    product_name = serializers.SerializerMethodField()
+
     class Meta:
         model = ProductDocuItemData
         fields = "__all__"
+    def get_product_name(self, obj):
+        # Safely access product_name and return "N/A" if product_id is None
+        if obj.product_id:
+            return obj.product_id.product_name
+        return "N/A"  # Return "N/A" if product_id is None
 
 class DocumentItemsSerializer(serializers.ModelSerializer):
     product_details = ProductDocuItemSerializer(source="productdocu_id", read_only=True)
@@ -59,13 +70,21 @@ class DocumentItemsSerializer(serializers.ModelSerializer):
     production_cost = serializers.SerializerMethodField()
     item_id = serializers.SerializerMethodField()
     item_name = serializers.SerializerMethodField()
+    serial_no = serializers.SerializerMethodField()
+    purchase_date = serializers.SerializerMethodField()
     class Meta:
         model = DocumentItems
         fields = "__all__"
         extra_kwargs = {
             'content_id': {'read_only': True}
         }
-        
+    def get_serial_no(self, obj):
+        if obj.serial_id:
+            return obj.serial_id.serial_no
+    def get_purchase_date(self, obj):
+        if obj.asset_id:
+            return obj.asset_id.purchase_date
+        return "N/A"
     def get_cost(self, obj):
         if obj.productdocu_id and obj.productdocu_id.product_id:
             return obj.productdocu_id.product_id.selling_price
@@ -73,13 +92,13 @@ class DocumentItemsSerializer(serializers.ModelSerializer):
             return obj.material_id.cost_per_unit
         elif obj.asset_id:
             return obj.asset_id.purchase_price
-        return None
+        return "N/A"
     def get_unit_of_measure(self, obj,):
         if obj.productdocu_id and obj.productdocu_id.product_id:
             return obj.productdocu_id.product_id.unit_of_measure
         elif obj.material_id:
             return obj.material_id.unit_of_measure
-        return None
+        return "N/A"
     def get_item_id(self, obj):
         if obj.productdocu_id and obj.productdocu_id.product_id:
             return obj.productdocu_id.product_id.product_id
@@ -87,6 +106,7 @@ class DocumentItemsSerializer(serializers.ModelSerializer):
             return obj.material_id.material_id
         elif obj.asset_id:
             return obj.asset_id.asset_id
+        return "N/A"
     def get_item_name(self, obj):
         if obj.productdocu_id and obj.productdocu_id.product_id:
             return obj.productdocu_id.product_id.product_name
@@ -94,6 +114,7 @@ class DocumentItemsSerializer(serializers.ModelSerializer):
             return obj.material_id.material_name
         elif obj.asset_id:
             return obj.asset_id.asset_name
+        return "N/A"
     def get_production_cost(self, obj):
         if obj.productdocu_id and obj.productdocu_id.product_id:
             cost_data = ProductCostData.objects.filter(product_id=obj.productdocu_id.product_id.product_id).first()
@@ -117,11 +138,18 @@ class GoodsTrackingDataSerializer(serializers.ModelSerializer):
     employee_name = serializers.SerializerMethodField()
     dept_name = serializers.SerializerMethodField()
     document_items = DocumentItemsSerializer(many=True) 
-    
+    invoice_amount = serializers.SerializerMethodField()
+    invoice_date = serializers.SerializerMethodField()
     
     class Meta:
         model = GoodsTrackingData
         fields = "__all__"  
+    def get_invoice_amount(self, obj):
+        if obj.invoice_id:
+            return obj.invoice_id.total_amount
+    def get_invoice_date(self, obj):
+        if obj.invoice_id:
+            return obj.invoice_id.invoice_date
     def get_vendor_name(self, obj):
         # Ensure that vendor is not None before accessing vendor_name
         if obj.vendor_code:
