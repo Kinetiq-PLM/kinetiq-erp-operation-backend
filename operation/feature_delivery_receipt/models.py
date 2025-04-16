@@ -43,12 +43,11 @@ class DeliveryReworkOrderData(models.Model):
         return self.external_id
     
 class ExternalGoodsIssueData(models.Model):
-    external_id = models.CharField(max_length=255, primary_key=True)
-    goods_issue_id = models.CharField(max_length=255)
+    goods_issue_id = models.CharField(max_length=255, primary_key=True)
     issue_date = models.DateField()
     issued_by = models.CharField(max_length=255)
-    product_id = models.CharField(max_length=255)
-    quantity = models.PositiveIntegerField()
+    item_name = models.CharField(max_length=255)
+    item_quantity = models.PositiveIntegerField()
     class Meta:
         managed = False
-        db_table = '"operations"."v_external_goods_issue_view"'
+        db_table = '"operations"."external_goods_issue_summary"'

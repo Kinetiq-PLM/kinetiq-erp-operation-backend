@@ -5,7 +5,7 @@ import datetime
 class AssetRemovalData(models.Model):
     status_choice = [("Approved", "Approved"), ("Pending", "Pending")]
     external_id = models.CharField(primary_key=True,max_length=255)
-    deprecation_report_id = models.CharField(max_length=255)
+    report_id = models.CharField(max_length=255)
     item_id = models.CharField(max_length=255)
     item_name = models.CharField(max_length=255)
     reported_date = models.DateTimeField()

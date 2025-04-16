@@ -4,4 +4,3 @@ from .models import *
 admin.site.register(InternalTransferDeliveryRequestData)
 admin.site.register(updateDeliveryRequestData)
 admin.site.register(getWarehouseIDData)
-admin.site.register(ExternalModuleProductOrderData)

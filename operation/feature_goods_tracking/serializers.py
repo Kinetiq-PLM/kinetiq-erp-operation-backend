@@ -140,16 +140,27 @@ class GoodsTrackingDataSerializer(serializers.ModelSerializer):
     document_items = DocumentItemsSerializer(many=True) 
     invoice_amount = serializers.SerializerMethodField()
     invoice_date = serializers.SerializerMethodField()
-    
+    invoice_id = serializers.SerializerMethodField()
     class Meta:
         model = GoodsTrackingData
         fields = "__all__"  
+    def get_invoice_id(self, obj):
+        try:
+            return obj.invoice_id.invoice_id
+        except (SalesInvoiceData.DoesNotExist, AttributeError):
+            return None
+
     def get_invoice_amount(self, obj):
-        if obj.invoice_id:
+        try:
             return obj.invoice_id.total_amount
+        except (SalesInvoiceData.DoesNotExist, AttributeError):
+            return None
+
     def get_invoice_date(self, obj):
-        if obj.invoice_id:
+        try:
             return obj.invoice_id.invoice_date
+        except (SalesInvoiceData.DoesNotExist, AttributeError):
+            return None
     def get_vendor_name(self, obj):
         # Ensure that vendor is not None before accessing vendor_name
         if obj.vendor_code:

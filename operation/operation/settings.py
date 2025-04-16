@@ -103,7 +103,17 @@ DATABASES = {
         'PORT': '5432',
     }
 }
-
+#import os
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql',
+#        'NAME': os.getenv('DB_NAME', 'Kinetiq-DB'),
+#        'USER': os.getenv('DB_USER', 'postgres'),
+#        'PASSWORD': os.getenv('DB_PASSWORD', 'KntBg3jIY0DbpH8G9bwt'),
+#        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+#        'PORT': os.getenv('DB_PORT', '15432'),
+#    }
+#}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

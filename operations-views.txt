@@ -92,46 +92,49 @@ ON
 
 
 --View for item removal
-CREATE VIEW operations.v_item_removal_view AS
+CREATE OR REPLACE VIEW operations.v_item_removal_view AS
 SELECT 
-	em.external_id,
-    dr.deprecation_report_id,
-    COALESCE(pdi.product_id, ii.material_id) AS item_id,
-    COALESCE(pr.product_name, rm.material_name) AS item_name,
-    dr.reported_date,
+    em.external_id,
+    COALESCE(dr.deprecation_report_id, er.expiry_report_id) AS report_id,
+    COALESCE(pdi.product_id, ii.asse_id) AS item_id,
+    COALESCE(pr.product_name, rm.asset_name) AS item_name,
+    COALESCE(dr.reported_date, er.reported_date) AS reported_date,
     CASE 
         WHEN ma.status = 'approved' THEN 'Approved'
         WHEN ma.status = 'rejected' THEN 'Rejected'
-        ELSE dr.deprecation_status
+        ELSE COALESCE(dr.deprecation_status, er.expiry_report_status)
     END AS deprecation_status
 FROM 
     operations.external_module em
-INNER JOIN 
+LEFT JOIN 
     inventory.deprecation_report dr
-ON 
-    em.deprecation_report_id = dr.deprecation_report_id
-LEFT JOIN
+        ON em.deprecation_report_id = dr.deprecation_report_id
+LEFT JOIN 
+    inventory.expiry_report er
+        ON em.expiry_report_id = er.expiry_report_id
+LEFT JOIN 
     inventory.inventory_item ii
-        ON ii.inventory_item_id = dr.inventory_item_id
-LEFT JOIN
+        ON ii.inventory_item_id = COALESCE(dr.inventory_item_id, er.inventory_item_id)
+LEFT JOIN 
     operations.product_document_items pdi
         ON pdi.productdocu_id = ii.productdocu_id
-LEFT JOIN
+LEFT JOIN 
     admin.products pr
         ON pr.product_id = pdi.product_id
-LEFT JOIN
-    admin.raw_materials rm
-        ON rm.material_id = ii.material_id
-LEFT JOIN
+LEFT JOIN 
+    admin.assets rm
+        ON rm.asset_id = ii.asset_id
+LEFT JOIN 
     management.management_approvals ma
         ON ma.external_id = em.external_id
 WHERE 
     NOT EXISTS (
         SELECT 1 
-        FROM management.management_approvals ma 
-        WHERE ma.external_id = em.external_id 
-        AND ma.status = 'pending'
+        FROM management.management_approvals ma_sub 
+        WHERE ma_sub.external_id = em.external_id 
+        AND ma_sub.status = 'pending'
     );
+
 
 
 --Product details view
