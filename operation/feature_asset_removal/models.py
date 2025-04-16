@@ -14,7 +14,7 @@ class AssetRemovalData(models.Model):
     class Meta:
         managed = False
         db_table = '"operations"."v_item_removal_view"'
-        ordering = ["external_id"]
+        ordering = ["reported_date"]
     def __str__(self):
         return self.external_id
     

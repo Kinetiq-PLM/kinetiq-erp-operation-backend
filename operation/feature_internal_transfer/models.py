@@ -14,6 +14,7 @@ class InternalTransferDeliveryRequestData(models.Model):
     class Meta:
         managed = False
         db_table = '"operations"."v_internal_delivery_request_view"'
+        ordering = ["request_date"]
     def __str__(self):
         return self.external_id
 
@@ -51,6 +52,7 @@ class ProductionOrderData(models.Model):
     class Meta:
         db_table = '"production"."production_orders_details"'
         managed = False
+        ordering = ["actual_quantity"]
 
 class ExternalModuleProductOrderData(models.Model):
     external_id = models.CharField(max_length=255, primary_key=True)
@@ -63,5 +65,7 @@ class ExternalModuleProductOrderData(models.Model):
     )
     rework_quantity = models.PositiveIntegerField()
     reason_rework = models.CharField(max_length=255)
+    class Meta:
+        ordering = ['production_order_detail_id'] 
 
     
