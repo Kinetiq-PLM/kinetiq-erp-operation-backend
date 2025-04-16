@@ -23,7 +23,7 @@ class SupplierView(APIView):
     def get(self, request): 
         vendor_data = VendorDataSerializer(VendorData.objects.all(), many=True)
         employee_data = EmployeeDataSerializer(
-            EmployeeData.objects.filter(dept_id__dept_name="Operations"), many=True
+            EmployeeData.objects.all(), many=True
         )
         return Response({
             "vendors": vendor_data.data,

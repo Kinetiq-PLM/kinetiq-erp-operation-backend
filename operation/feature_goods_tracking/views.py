@@ -41,7 +41,9 @@ class ProductDocuItemView(viewsets.ReadOnlyModelViewSet):
 
 
         return Response(serializer.data)
-
+class SalesInvoiceView(viewsets.ReadOnlyModelViewSet):
+    queryset = SalesInvoiceData.objects.all()
+    serializer_class = SalesInvoiceDataSerializer
         
 class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
     queryset = GoodsTrackingData.objects.all()

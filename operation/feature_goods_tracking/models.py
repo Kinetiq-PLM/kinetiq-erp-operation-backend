@@ -84,7 +84,7 @@ class SerialTrackingData(models.Model):
         ordering = ["serial_no"]
 
 class ProductDocuItemData(models.Model):
-    productdocu_id = models.CharField(max_length=255, primary_key=True)
+    productdocu_id = models.CharField(max_length=255, primary_key=True, unique=False)
     product_id = models.ForeignKey(
         ProductData, 
         db_column="product_id", 
@@ -110,7 +110,7 @@ def get_default_employee():
 class SalesInvoiceData(models.Model):
     invoice_id = models.CharField(max_length=255, primary_key=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    invoice_date = models.DateField()
+    invoice_date = models.DateTimeField()
     class Meta:
         managed = False
         db_table = '"sales"."sales_invoices"'
@@ -200,7 +200,7 @@ class DocumentItems(models.Model):
         blank=True,
         related_name="document_materials"
     ) 
-    productdocu_id = models.OneToOneField(
+    productdocu_id = models.ForeignKey(
         ProductDocuItemData, 
         db_column="productdocu_id", 
         on_delete=models.SET_NULL, 
