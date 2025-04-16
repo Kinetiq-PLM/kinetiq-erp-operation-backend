@@ -4,7 +4,13 @@ from feature_get_reference_data.models import *
 
 class PurchaseRequestData(models.Model):
     request_id = models.CharField(max_length=255, primary_key=True)
-    employee_id = models.CharField(max_length=255)
+    employee_id = models.ForeignKey(
+        EmployeeData,
+        db_column="employee_id",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
     class Meta:
         managed = False
         db_table = '"purchasing"."purchase_requests"'
