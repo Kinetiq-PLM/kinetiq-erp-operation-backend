@@ -28,7 +28,9 @@ class ProductionOrderSerializer(serializers.ModelSerializer):
         model = ProductionOrderData
         fields = '__all__'
 class ExternalModuleProductOrderSerializer(serializers.ModelSerializer):
+    product_name = serializers.SerializerMethodField()
     class Meta:
         model = ExternalModuleProductOrderData
         fields = '__all__'
         read_only_fields = ['external_id']
+    

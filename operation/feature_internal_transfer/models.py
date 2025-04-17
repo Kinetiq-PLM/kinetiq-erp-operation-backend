@@ -11,6 +11,7 @@ class InternalTransferDeliveryRequestData(models.Model):
     module_name = models.CharField(max_length=255)
     request_date = models.DateField(default=datetime.date.today)
     content_id = models.CharField(max_length=255)
+    item_name = models.CharField(max_length=255)
     class Meta:
         managed = False
         db_table = '"operations"."v_internal_delivery_request_view"'
@@ -67,5 +68,6 @@ class ExternalModuleProductOrderData(models.Model):
     reason_rework = models.CharField(max_length=255)
     class Meta:
         ordering = ['production_order_detail_id'] 
+    
 
     

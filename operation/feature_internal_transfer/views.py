@@ -121,6 +121,7 @@ class ExternalModuleProductView(viewsets.ModelViewSet):
             cursor.execute("""
                 SELECT 
                     em.production_order_detail_id,
+                    prod.product_name,
                     em.external_id,
                     em.rework_quantity,
                     em.reason_rework,
@@ -130,6 +131,14 @@ class ExternalModuleProductView(viewsets.ModelViewSet):
                 FROM operations.external_module em
                 JOIN production.production_orders_details po
                 ON em.production_order_detail_id = po.production_order_detail_id
+                LEFT JOIN production.production_orders_header poh
+                    ON poh.production_order_id = po.production_order_id
+                LEFT JOIN mrp.bill_of_materials bom_prod
+                    ON bom_prod.bom_id = poh.bom_id
+                LEFT JOIN mrp.product_mats pm_prod
+                    ON pm_prod.product_mats_id = bom_prod.product_mats_id
+                LEFT JOIN admin.products prod
+                    ON prod.product_id = pm_prod.product_id
             """)
             rows = cursor.fetchall()
 
@@ -137,15 +146,16 @@ class ExternalModuleProductView(viewsets.ModelViewSet):
         for row in rows:
             result.append({
                 "production_order_detail_id": row[0],
+                "product_name" : row[1],
                 "external_module": {
-                    "external_id": row[1],
-                    "rework_quantity": row[2],
-                    "reason_rework": row[3]
+                    "external_id": row[2],
+                    "rework_quantity": row[3],
+                    "reason_rework": row[4]
                 },
                 "production_order": {
-                    "actual_quantity": row[4],
-                    "rework_required": row[5],
-                    "rework_notes": row[6]
+                    "actual_quantity": row[5],
+                    "rework_required": row[6],
+                    "rework_notes": row[7]
                 }
             })
         result = sorted(result, key=lambda x: x['external_module']['reason_rework'] != '---')
