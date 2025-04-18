@@ -110,7 +110,6 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
         try:
             cursor = connection.cursor()
             inserted_productdocu_ids = {}
-            cursor.execute("ALTER TABLE operations.document_items DISABLE TRIGGER trigger_grpo_journal;")
             # 1. Get next available document_id and transaction_id
             next_document_no, next_transaction_id = get_next_ids()
 
@@ -187,7 +186,6 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
                 data.get('tax_amount')
             ])
             document_id = cursor.fetchone()[0]
-            cursor.execute("ALTER TABLE operations.document_items ENABLE TRIGGER trigger_grpo_journal;")
             return Response({
                 "message": "Created successfully",
                 "document_id": document_id,
@@ -335,17 +333,11 @@ class createDocumentItem(viewsets.ViewSet):
         try:
             data = request.data
             product_id = data.get('product_id')
-            with connection.cursor() as cursor:
-            # Disable the trigger
-                cursor.execute("ALTER TABLE operations.document_items DISABLE TRIGGER trigger_grpo_journal;")
             if not product_id:
                 return Response({'error': 'product_id is required'}, status=status.HTTP_400_BAD_REQUEST)
             manuf_date = data.get('manuf_date') or datetime.date.today()
             expiry_date = data.get('expiry_date') or (manuf_date + datetime.timedelta(days=365))
             with connection.cursor() as cursor:
-                cursor.execute("""
-                    ALTER TABLE operations.document_items DISABLE TRIGGER trigger_grpo_journal;
-                """)
                 cursor.execute("""
                     INSERT INTO operations.product_document_items (product_id, manuf_date, expiry_date)
                     VALUES (%s, %s, %s)
@@ -356,9 +348,6 @@ class createDocumentItem(viewsets.ViewSet):
                     expiry_date
                 ])
                 productdocu_id = cursor.fetchone()[0]
-                cursor.execute("""
-                    ALTER TABLE operations.document_items ENABLE TRIGGER trigger_grpo_journal;
-                """)
             # Use ORM to return full data
             product_docu_item = ProductDocuItemData.objects.get(productdocu_id=productdocu_id)
             serializer = ProductDocuItemSerializer(product_docu_item)
@@ -373,9 +362,6 @@ class createDocumentItem(viewsets.ViewSet):
         try:
             data = request.data
             document_id = data.get('document_id')
-            with connection.cursor() as cursor:
-            # Re-enable the trigger
-                cursor.execute("ALTER TABLE operations.document_items DISABLE TRIGGER trigger_grpo_journal;")
             
             if not document_id:
                 return Response({'error': 'document_id is required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -439,10 +425,6 @@ class createDocumentItem(viewsets.ViewSet):
             goods_tracking = item_data['document_id']
             goods_tracking.transaction_cost += item_data['total']
             goods_tracking.save()
-
-            with connection.cursor() as cursor:
-            # Re-enable the trigger
-                cursor.execute("ALTER TABLE operations.document_items ENABLE TRIGGER trigger_grpo_journal;")
 
             serializer = DocumentItemsSerializer(document_item)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
