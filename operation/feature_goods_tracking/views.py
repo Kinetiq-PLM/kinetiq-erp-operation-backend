@@ -71,10 +71,33 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
 
             cursor.execute("SELECT MAX(CAST(document_no AS INTEGER)) FROM operations.document_header")
             last_document_no = cursor.fetchone()[0] or 0
+            
+            cursor.execute("""
+                SELECT MAX(ar_credit_memo) 
+                FROM operations.document_header 
+                WHERE ar_credit_memo LIKE 'AR-%'
+            """)
+            last_credit_memo = cursor.fetchone()[0] or "AR-1000"  # Default starting point
+
+            # Calculate next credit memo ID
+            if last_credit_memo:
+                last_number = int(last_credit_memo.split('-')[1])
+                next_credit_memo = f"AR-{last_number + 1}"
+            else:
+                next_credit_memo = "AR-1000"
 
             return Response({
                 "next_transaction_id": str(last_transaction_id + 1),
-                "next_document_no": str(last_document_no + 1)
+                "next_document_no": str(last_document_no + 1),
+                "last_credit_memo_id": last_credit_memo,
+                "next_credit_memo_id": next_credit_memo
+            })
+
+            return Response({
+                "next_transaction_id": str(last_transaction_id + 1),
+                "next_document_no": str(last_document_no + 1),
+                "last_credit_memo_id": last_credit_memo,
+                "next_credit_memo_id": next_credit_memo
             })
 
         except Exception as e:
@@ -175,7 +198,7 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
-    @action(detail=False, methods=['post'], url_path='custom-create')
+    @action(detail=False, methods=['post', 'get'], url_path='custom-create')
     def create_tracking(self, request):
         data = request.data
         document_items = data.get('document_items', [])
@@ -183,12 +206,6 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
         try:
             cursor = connection.cursor()
             inserted_productdocu_ids = {}
-            cursor.execute("ALTER TABLE operations.document_items DISABLE TRIGGER trigger_grpo_journal;")
-            #next_document_no, next_transaction_id = self.get_next_ids()
-
-            #data['document_no'] = next_document_no
-            #data['transaction_id'] = next_transaction_id
-            
             # 1. Insert into product_document_items
             for item in document_items:
                 product_id = item.get('product_id')
@@ -231,16 +248,17 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
                 ])
                 inserted_doc_item_ids.append(cursor.fetchone()[0])
             # 3. Insert into document_header
+            
             cursor.execute("""
                 INSERT INTO operations.document_header (
                     document_type, transaction_id, document_no, status, posting_date,
                     transaction_cost, vendor_code, buyer, employee_id,
                     delivery_date, document_date, initial_amount, discount_rate,
-                    discount_amount, freight, tax_rate, tax_amount
+                    discount_amount, freight, tax_rate, tax_amount, ar_credit_memo, invoice_id
                 ) VALUES (%s, %s, %s, %s, %s,
                           %s, %s, %s, %s,
                           %s, %s, %s, %s,
-                          %s, %s, %s, %s)
+                          %s, %s, %s, %s, %s, %s)
                 RETURNING document_id
             """, [
                 data.get('document_type'),
@@ -259,7 +277,9 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
                 data.get('discount_amount'),
                 data.get('freight'),
                 data.get('tax_rate'),
-                data.get('tax_amount')
+                data.get('tax_amount'),
+                data.get('ar_credit_memo'),
+                data.get('invoice_id')
             ])
             document_id = cursor.fetchone()[0]
             for content_id in inserted_doc_item_ids:
@@ -268,7 +288,6 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
                     SET document_id = %s
                     WHERE content_id = %s
                 """, [document_id, content_id])
-            cursor.execute("ALTER TABLE operations.document_items ENABLE TRIGGER trigger_grpo_journal;")
             return Response({
                 "message": "Created successfully",
                 "document_id": document_id,
