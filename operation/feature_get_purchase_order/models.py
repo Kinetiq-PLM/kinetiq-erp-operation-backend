@@ -64,6 +64,7 @@ class PurchaseQuotationData(models.Model):
         null=True,
         blank=True
     )
+    buyer = models.CharField(max_length=255)
     delivery_loc = models.CharField(max_length=255)
     freight = models.DecimalField(max_digits=10, decimal_places=2)
     discount_percent = models.DecimalField(max_digits=10, decimal_places=2)

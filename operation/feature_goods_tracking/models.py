@@ -167,7 +167,7 @@ class GoodsTrackingData(models.Model):
     class Meta:
         managed = False
         db_table = '"operations"."document_header"'
-        ordering = ["document_id"]
+        ordering = ["-transaction_id"]
     
     def __str__(self):
         return self.document_id
