@@ -72,9 +72,19 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
             cursor.execute("SELECT MAX(CAST(document_no AS INTEGER)) FROM operations.document_header")
             last_document_no = cursor.fetchone()[0] or 0
 
+            cursor.execute("""
+                SELECT MAX(CAST(SUBSTRING(ar_credit_memo FROM '\d+$') AS INTEGER))
+                FROM operations.document_header
+                WHERE ar_credit_memo LIKE 'AR-%'
+            """)
+            last_credit_number = cursor.fetchone()[0] or 0
+
+            next_credit_memo_id = f"AR-{last_credit_number + 1}"
+    
             return Response({
                 "next_transaction_id": str(last_transaction_id + 1),
-                "next_document_no": str(last_document_no + 1)
+                "next_document_no": str(last_document_no + 1),
+                "next_credit_memo_id": next_credit_memo_id
             })
 
         except Exception as e:
@@ -87,7 +97,6 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
         try:
             cursor = connection.cursor()
             inserted_productdocu_ids = {}
-            cursor.execute("ALTER TABLE operations.document_items DISABLE TRIGGER trigger_grpo_journal;")
             # 1. Get next available document_id and transaction_id
             next_document_no, next_transaction_id = get_next_ids()
 
@@ -118,8 +127,8 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
 
                 cursor.execute("""
                     INSERT INTO operations.document_items 
-                    (productdocu_id, asset_id, material_id, quantity, unit_cost, warehouse)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    (productdocu_id, asset_id, material_id, quantity, unit_cost, warehouse_id)
+                    VALUES (%s, %s, %s, %s, %s, %s)
                     RETURNING content_id
                 """, [
                     productdocu_id,
@@ -127,7 +136,7 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
                     item.get('material_id'),
                     item.get('quantity'),
                     item.get('unit_cost'),
-                    item.get('warehouse'),
+                    item.get('warehouse_id'),
 
                 ])
                 inserted_doc_item_ids.append(cursor.fetchone()[0])
@@ -164,7 +173,6 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
                 data.get('tax_amount')
             ])
             document_id = cursor.fetchone()[0]
-            cursor.execute("ALTER TABLE operations.document_items ENABLE TRIGGER trigger_grpo_journal;")
             return Response({
                 "message": "Created successfully",
                 "document_id": document_id,
@@ -227,7 +235,7 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
                     item.get('material_id'),
                     item.get('quantity'),
                     item.get('unit_cost'),
-                    item.get('warehouse'),
+                    item.get('warehouse_id'),
                 ])
                 inserted_doc_item_ids.append(cursor.fetchone()[0])
             # 3. Insert into document_header
@@ -236,11 +244,11 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
                     document_type, transaction_id, document_no, status, posting_date,
                     transaction_cost, vendor_code, buyer, employee_id,
                     delivery_date, document_date, initial_amount, discount_rate,
-                    discount_amount, freight, tax_rate, tax_amount
+                    discount_amount, freight, tax_rate, tax_amount, ar_credit_memo,invoice_id
                 ) VALUES (%s, %s, %s, %s, %s,
                           %s, %s, %s, %s,
                           %s, %s, %s, %s,
-                          %s, %s, %s, %s)
+                          %s, %s, %s, %s, %s, %s)
                 RETURNING document_id
             """, [
                 data.get('document_type'),
@@ -259,7 +267,9 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
                 data.get('discount_amount'),
                 data.get('freight'),
                 data.get('tax_rate'),
-                data.get('tax_amount')
+                data.get('tax_amount'),
+                data.get('ar_credit_memo'),
+                data.get('invoice_id')
             ])
             document_id = cursor.fetchone()[0]
             for content_id in inserted_doc_item_ids:
