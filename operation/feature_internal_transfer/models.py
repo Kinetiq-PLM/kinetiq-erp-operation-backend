@@ -10,6 +10,7 @@ class InternalTransferDeliveryRequestData(models.Model):
     warehouse_location = models.CharField(max_length=255)
     request_date = models.DateField(default=datetime.date.today)
     quantity = models.PositiveBigIntegerField(default=0)
+    item_name = models.CharField(max_length=255)
     class Meta:
         managed = False
         db_table = '"operations"."v_internal_delivery_request_view"'
