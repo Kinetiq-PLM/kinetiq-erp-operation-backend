@@ -11,20 +11,18 @@ class DeliveryReceiptView(viewsets.ModelViewSet):
     serializer_class = DeliveryReceiptSerializer
     
     @action(detail=False, methods=['post', 'get'], url_path='sync-deliveryreceipt')
-    def sync_production(self, request):
+    def sync_deliveryreceipt(self, request):
 
         try:
             with connection.cursor() as cursor:
 
-
-                # Get all existing delivery_receipt_id from external module table
+                # Get all existing delivery_receipt_id from document items module table
                 cursor.execute("""
-                    SELECT delivery_receipt_id
-                    FROM operations.external_module
-                    WHERE delivery_receipt_id IS NOT NULL
+                    SELECT external_id 
+                    FROM operations.document_items 
+                    WHERE external_id LIKE 'DIS-DR%';
                 """)
                 existing_ids = set(row[0] for row in cursor.fetchall())
-
 
                 # Get all production_order_detail_ids from distribution delivery_receipt
                 cursor.execute("""
@@ -36,13 +34,13 @@ class DeliveryReceiptView(viewsets.ModelViewSet):
                 # Determine which IDs are missing
                 missing_ids = all_ids - existing_ids
 
-                # Insert missing entries into external_module_product_order and document_items
+                # Insert missing entries into document_items
                 inserted_count = 0
                 for pid in missing_ids:
                     # Insert into external_module_product_order and get generated external_id
                     cursor.execute("""
-                        INSERT INTO operations.external_module(
-                            delivery_receipt_id
+                        INSERT INTO operations.document_items(
+                            external_id
                         )
                         VALUES (%s)
                         RETURNING external_id;
@@ -68,14 +66,14 @@ class BillingReceiptView(viewsets.ModelViewSet):
     serializer_class = BillingReceiptSerializer
     
     @action(detail=False, methods=['post', 'get'], url_path='sync-billingreceipt')
-    def sync_production(self, request):
+    def sync_billingreceipt(self, request):
         try:
             with connection.cursor() as cursor:
-                # Get all existing billing_receipt_id from external module table
+                # Get all existing billing_receipt_id from document items module table
                 cursor.execute("""
-                    SELECT billing_receipt_id
-                    FROM operations.external_module
-                    WHERE delivery_receipt_id IS NOT NULL
+                    SELECT external_id
+                    FROM operations.document_items
+                    WHERE external_id LIKE 'DIS-BR%'
                 """)
                 existing_ids = set(row[0] for row in cursor.fetchall())
 
@@ -95,8 +93,8 @@ class BillingReceiptView(viewsets.ModelViewSet):
                 for pid in missing_ids:
                     # Insert into external_module_product_order and get generated external_id
                     cursor.execute("""
-                        INSERT INTO operations.external_module(
-                            billing_receipt_id
+                        INSERT INTO operations.document_items(
+                            external_id
                         )
                         VALUES (%s)
                         RETURNING external_id;
@@ -121,14 +119,14 @@ class DeliveryReworkOrderView(viewsets.ModelViewSet):
     queryset = DeliveryReworkOrderData.objects.all()
     serializer_class = DeliveryReworkOrderSerializer
     @action(detail=False, methods=['post', 'get'], url_path='sync-deliveryreworkorder')
-    def sync_production(self, request):
+    def sync_deliveryreworkorder(self, request):
         try:
             with connection.cursor() as cursor:
                 # Get all existing rework_id from external module table
                 cursor.execute("""
-                    SELECT rework_id
-                    FROM operations.external_module
-                    WHERE delivery_receipt_id IS NOT NULL
+                    SELECT external_id
+                    FROM operations.document_items
+                    WHERE external_id LIKE 'DIS-RO%'
                 """)
                 existing_ids = set(row[0] for row in cursor.fetchall())
 
@@ -148,8 +146,8 @@ class DeliveryReworkOrderView(viewsets.ModelViewSet):
                 for pid in missing_ids:
                     # Insert into external_module_product_order and get generated external_id
                     cursor.execute("""
-                        INSERT INTO operations.external_module(
-                            rework_id
+                        INSERT INTO operations.document_items(
+                            external_id
                         )
                         VALUES (%s)
                         RETURNING external_id;
@@ -174,14 +172,14 @@ class ExternalGoodsIssueView(viewsets.ModelViewSet):
     queryset = ExternalGoodsIssueData.objects.all()
     serializer_class = ExternalGoodsIssueSerializer
     @action(detail=False, methods=['post', 'get'], url_path='sync-deliverygoodsissue')
-    def sync_production(self, request):
+    def sync_deliverygoodsissue(self, request):
         try:
             with connection.cursor() as cursor:
                 # Get all existing goods_issue_id from external module table
                 cursor.execute("""
-                    SELECT goods_issue_id
-                    FROM operations.external_module
-                    WHERE delivery_receipt_id IS NOT NULL
+                    SELECT external_id
+                    FROM operations.document_items
+                    WHERE external_id LIKE 'DIS-GI%'
                 """)
                 existing_ids = set(row[0] for row in cursor.fetchall())
 
@@ -201,8 +199,8 @@ class ExternalGoodsIssueView(viewsets.ModelViewSet):
                 for pid in missing_ids:
                     # Insert into external_module_product_order and get generated external_id
                     cursor.execute("""
-                        INSERT INTO operations.external_module(
-                            goods_issue_id
+                        INSERT INTO operations.document_items(
+                            external_id
                         )
                         VALUES (%s)
                         RETURNING external_id;

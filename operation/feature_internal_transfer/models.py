@@ -4,20 +4,18 @@ import datetime
 
 # Create your models here.
 class InternalTransferDeliveryRequestData(models.Model):
-    external_id = models.CharField(max_length=255, primary_key=True)
-    delivery_id = models.CharField(max_length=255)
+    delivery_id = models.CharField(max_length=255, primary_key=True)
     delivery_type = models.CharField(max_length=255)
-    warehouse_id = models.CharField(max_length=255)
     module_name = models.CharField(max_length=255)
+    warehouse_location = models.CharField(max_length=255)
     request_date = models.DateField(default=datetime.date.today)
-    content_id = models.CharField(max_length=255)
-    item_name = models.CharField(max_length=255)
+    quantity = models.PositiveBigIntegerField(default=0)
     class Meta:
         managed = False
         db_table = '"operations"."v_internal_delivery_request_view"'
         ordering = ["request_date"]
     def __str__(self):
-        return self.external_id
+        return self.delivery_id
 
 
 class updateDeliveryRequestData(models.Model):

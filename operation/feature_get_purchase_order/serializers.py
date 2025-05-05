@@ -21,7 +21,7 @@ class PurchaseRequestSerializer(serializers.ModelSerializer):
 class VendorDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = VendorData
-        fields = ['vendor_code', 'vendor_name']  # add other fields as needed
+        fields = ['vendor_code', 'company_name']  # add other fields as needed
 
 
 class QuotationContentsSerializer(serializers.ModelSerializer):
@@ -42,7 +42,7 @@ class PurchaseQuotationSerializer(serializers.ModelSerializer):
     def get_vendor_name(self, obj):
         # Ensure that vendor is not None before accessing vendor_name
         if obj.vendor_code:
-            return obj.vendor_code.vendor_name
+            return obj.vendor_code.company_name
         return None
     def get_contact_person(self, obj):
         if obj.vendor_code:

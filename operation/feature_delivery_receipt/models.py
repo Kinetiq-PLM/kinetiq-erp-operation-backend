@@ -36,7 +36,7 @@ class DeliveryReworkOrderData(models.Model):
     
     class Meta:
         managed = False
-        db_table = '"operations"."v_delivery_rework_order_view"'
+        db_table = '"operations"."v_delivery_return_order_view"'
         ordering = ["external_id"]
         
     def __str__(self):
@@ -50,4 +50,4 @@ class ExternalGoodsIssueData(models.Model):
     item_quantity = models.PositiveIntegerField()
     class Meta:
         managed = False
-        db_table = '"operations"."external_goods_issue_summary"'
+        db_table = '"operations"."v_external_goods_issue"'

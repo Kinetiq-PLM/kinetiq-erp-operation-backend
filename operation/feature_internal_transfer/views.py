@@ -3,11 +3,12 @@ from .models import *
 from .serializers import *
 from django.db import connection
 from django.shortcuts import get_object_or_404
-
+import datetime
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework import status
+from django.db.models import Q
 
 
 # Create your views here.
@@ -16,19 +17,34 @@ class InternalTransferDeliveryRequestView(viewsets.ModelViewSet):
     serializer_class = InternalTransferDeliveryRequestSerializer
 
 class updateDeliveryRequestView(viewsets.ModelViewSet):
-    queryset = updateDeliveryRequestData.objects.all()
+    queryset = updateDeliveryRequestData.objects.filter(
+        Q(external_id__startswith='PROD-POD') | Q(external_id__startswith='PROJ-EPRM')
+    )
     serializer_class = updateDRWarehouseSerializer
-    
     def update(self, request, pk=None):
         try:
-            queryset = updateDeliveryRequestData.objects.get(content_id=pk)
             data = request.data
+            warehouse_id = data.get('warehouse_id')
+            delivery_id = data.get('delivery_id')  # optional
 
-            queryset.warehouse_id = data.get('warehouse_id', queryset.warehouse_id)
-            queryset.delivery_request_id = data.get('delivery_id', queryset.delivery_request_id)
-            queryset.save()
+            with connection.cursor() as cursor:
+                # Check if record exists
+                cursor.execute("""
+                    SELECT 1 FROM operations.document_items
+                    WHERE external_id = %s
+                """, [delivery_id])
+                if cursor.fetchone() is None:
+                    return Response({"error": "Record not found"}, status=status.HTTP_404_NOT_FOUND)
+
+                # Update the record
+                cursor.execute("""
+                    UPDATE operations.document_items
+                    SET warehouse_id = %s
+                    WHERE external_id = %s
+                """, [warehouse_id, delivery_id])
 
             return Response({"message": "Delivery approval updated successfully"}, status=status.HTTP_200_OK)
+                
         except updateDeliveryRequestData.DoesNotExist:
             return Response({"error": "Record not found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
@@ -55,7 +71,7 @@ class getWarehouseIDView(viewsets.ModelViewSet):
 class ExternalModuleProductView(viewsets.ModelViewSet):
     queryset = ExternalModuleProductOrderData.objects.all()
     serializer_class = ExternalModuleProductOrderSerializer
-
+    
     @action(detail=False, methods=['post', 'get'], url_path='sync-production')
     def sync_production(self, request):
 
@@ -64,7 +80,9 @@ class ExternalModuleProductView(viewsets.ModelViewSet):
 
                 # Get all existing production_order_detail_ids from external module table
                 cursor.execute("""
-                    SELECT production_order_detail_id FROM operations.external_module
+                    SELECT external_id
+                    FROM operations.document_items
+                    WHERE document_items.external_id LIKE 'PROD-POD%';
                 """)
                 existing_ids = set(row[0] for row in cursor.fetchall())
 
@@ -80,28 +98,30 @@ class ExternalModuleProductView(viewsets.ModelViewSet):
 
                 # Insert missing entries into external_module_product_order and document_items
                 inserted_count = 0
+                today = datetime.date.today()
                 for pid in missing_ids:
-                    # Insert into external_module_product_order and get generated external_id
+                    # Insert into document_items and get generated content_id
                     cursor.execute("""
-                        INSERT INTO operations.external_module(
-                            production_order_detail_id,
-                            rework_quantity,
-                            reason_rework
+                        INSERT INTO operations.document_items(
+                            external_id,
+                            quantity,
+                            reason_rework,
+                            request_date
                         )
-                        VALUES (%s, %s, %s)
-                        RETURNING external_id;
-                    """, [pid, 0, ""])
+                        VALUES (%s, %s, %s, %s)
+                        RETURNING content_id;
+                    """, [pid, 0, "", today])
 
                     generated_external_id = cursor.fetchone()[0]
                     inserted_count += 1
-
+                    
                     # Insert into document_items with the generated external_id
-                    cursor.execute("""
-                        INSERT INTO operations.document_items (
-                            external_id
-                        )
-                        VALUES (%s);
-                    """, [generated_external_id])
+                    #cursor.execute("""
+                    #    INSERT INTO operations.document_items (
+                    #        external_id
+                    #    )
+                    #    VALUES (%s);
+                    #""", [generated_external_id])
 
                 return Response({
                     'status': 'success',
@@ -119,46 +139,21 @@ class ExternalModuleProductView(viewsets.ModelViewSet):
     def fetch_all_joined(self, request):
         with connection.cursor() as cursor:
             cursor.execute("""
-                SELECT 
-                    em.production_order_detail_id,
-                    prod.product_name,
-                    em.external_id,
-                    em.rework_quantity,
-                    em.reason_rework,
-                    po.actual_quantity,
-                    po.rework_required,
-                    po.rework_notes
-                FROM operations.external_module em
-                JOIN production.production_orders_details po
-                ON em.production_order_detail_id = po.production_order_detail_id
-                LEFT JOIN production.production_orders_header poh
-                    ON poh.production_order_id = po.production_order_id
-                LEFT JOIN mrp.bill_of_materials bom_prod
-                    ON bom_prod.bom_id = poh.bom_id
-                LEFT JOIN mrp.product_mats pm_prod
-                    ON pm_prod.product_mats_id = bom_prod.product_mats_id
-                LEFT JOIN admin.products prod
-                    ON prod.product_id = pm_prod.product_id
+                SELECT * FROM operations.v_internal_rework_details
             """)
             rows = cursor.fetchall()
 
         result = []
         for row in rows:
             result.append({
-                "production_order_detail_id": row[0],
+                "rework_id": row[0],
                 "product_name" : row[1],
-                "external_module": {
-                    "external_id": row[2],
-                    "rework_quantity": row[3],
-                    "reason_rework": row[4]
-                },
-                "production_order": {
-                    "actual_quantity": row[5],
-                    "rework_required": row[6],
-                    "rework_notes": row[7]
-                }
+                "reason_rework" : row[2],
+                "actual_quantity" : row[3],
+                "quantity" : row[4]
             })
-        result = sorted(result, key=lambda x: x['external_module']['reason_rework'] != '---')
+        result = sorted(result, key=lambda x: (x['reason_rework'] or '').strip() != '')
+
         return Response(result)
 
 
@@ -178,7 +173,7 @@ class ExternalModuleProductView(viewsets.ModelViewSet):
                 for entry in data:
                     try:
                         prod_id = entry.get("production_order_detail_id")
-                        quantity = entry.get("rework_quantity")
+                        quantity = entry.get("quantity")
                         reason = entry.get("reason_rework")
 
                         if not prod_id:
@@ -186,11 +181,11 @@ class ExternalModuleProductView(viewsets.ModelViewSet):
                             continue
 
                         cursor.execute("""
-                            UPDATE operations.external_module
-                            SET rework_quantity = %s,
+                            UPDATE operations.document_items
+                            SET quantity = %s,
                                 reason_rework = %s
-                            WHERE production_order_detail_id = %s
-                            RETURNING production_order_detail_id
+                            WHERE external_id = %s
+                            RETURNING external_id
                         """, (quantity, reason, prod_id))
 
                         if cursor.rowcount == 0:

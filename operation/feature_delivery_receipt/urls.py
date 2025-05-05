@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import *
 
 router = DefaultRouter()
-router.register(r'DeliveryReworkOrder', DeliveryReworkOrderView) 
+router.register(r'DeliveryReturnOrder', DeliveryReworkOrderView) 
 router.register(r'DeliveryReceipt', DeliveryReceiptView) 
 router.register(r'BillingReceipt', BillingReceiptView) 
 router.register(r'GoodsIssue', ExternalGoodsIssueView) 

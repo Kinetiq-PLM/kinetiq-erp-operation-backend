@@ -4,8 +4,7 @@ import datetime
 # Create your models here.
 class AssetRemovalData(models.Model):
     status_choice = [("Approved", "Approved"), ("Pending", "Pending")]
-    external_id = models.CharField(primary_key=True,max_length=255)
-    report_id = models.CharField(max_length=255)
+    report_id = models.CharField(max_length=25, primary_key=True)
     item_id = models.CharField(max_length=255)
     item_name = models.CharField(max_length=255)
     reported_date = models.DateTimeField()
@@ -16,7 +15,7 @@ class AssetRemovalData(models.Model):
         db_table = '"operations"."v_item_removal_view"'
         ordering = ["reported_date"]
     def __str__(self):
-        return self.external_id
+        return self.report_id
     
 class sendToManagement(models.Model):
     approval_id = models.CharField(primary_key=True, editable=False)

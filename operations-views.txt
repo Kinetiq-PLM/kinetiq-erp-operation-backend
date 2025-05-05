@@ -96,7 +96,7 @@ CREATE OR REPLACE VIEW operations.v_item_removal_view AS
 SELECT 
     em.external_id,
     COALESCE(dr.deprecation_report_id, er.expiry_report_id) AS report_id,
-    COALESCE(pdi.product_id, ii.asse_id) AS item_id,
+    COALESCE(pdi.product_id, ii.asset_id) AS item_id,
     COALESCE(pr.product_name, rm.asset_name) AS item_name,
     COALESCE(dr.reported_date, er.reported_date) AS reported_date,
     CASE 

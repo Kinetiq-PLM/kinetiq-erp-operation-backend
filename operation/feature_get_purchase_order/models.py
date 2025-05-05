@@ -30,10 +30,8 @@ class QuotationContentsData(models.Model):
         null=True,
         blank=True
     )
-    material_id = models.CharField(max_length=255)
-    asset_id = models.CharField(max_length=255)
+    item_id = models.CharField(max_length=255)
     purchase_quantity = models.PositiveIntegerField()
-    
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     discount = models.DecimalField(max_digits=10, decimal_places=2)
     total = models.DecimalField(max_digits=10, decimal_places=2)
@@ -65,6 +63,7 @@ class PurchaseQuotationData(models.Model):
         blank=True
     )
     buyer = models.CharField(max_length=255)
+    owner = models.CharField(max_length=255)
     delivery_loc = models.CharField(max_length=255)
     freight = models.DecimalField(max_digits=10, decimal_places=2)
     discount_percent = models.DecimalField(max_digits=10, decimal_places=2)
@@ -80,10 +79,10 @@ class PurchaseQuotationData(models.Model):
         return str(self.quotation_id)
 
 
-class PurchaseOrderData(models.Model):  # <- corrected from models.model to models.Model
+class PurchaseOrderData(models.Model):  
     purchase_id = models.CharField(max_length=255, primary_key=True)
     delivery_date = models.DateField()
-    quotation_id = models.OneToOneField(  # one-to-one relationship with quotation
+    quotation_id = models.OneToOneField(  
         PurchaseQuotationData,
         db_column="quotation_id",
         on_delete=models.SET_NULL,

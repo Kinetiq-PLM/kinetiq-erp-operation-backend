@@ -20,7 +20,6 @@ admin_router.registry.extend(internal_transfer_router.registry)
 admin_router.registry.extend(update_delivery_approval.registry)
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
     path("", include("feature_asset_removal.urls")),
     path("", include("feature_delivery_receipt.urls")),
     path("", include("feature_get_purchase_order.urls")),

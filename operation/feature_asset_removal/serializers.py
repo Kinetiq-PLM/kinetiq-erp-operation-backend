@@ -10,3 +10,4 @@ class sendToManagementSerializer(serializers.ModelSerializer):
     class Meta:
         model = sendToManagement
         fields = '__all__'
+        read_only_fields = ['approval_id'] 

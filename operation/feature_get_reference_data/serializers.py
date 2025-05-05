@@ -1,6 +1,10 @@
 from rest_framework import serializers
 from .models import *
-
+class ItemDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ItemData
+        fields = "__all__"  
+        
 class VendorDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = VendorData
@@ -18,20 +22,7 @@ class EmployeeDataSerializer(serializers.ModelSerializer):
         fields = "__all__"  #
     def get_employee_name(self, obj):
         if obj.first_name and obj.last_name:
-            return f"{obj.first_name} {obj.last_name}"
-        
-class ProductDataSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProductData  
-        fields = "__all__"  #
-class MaterialDataSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MaterialData  
-        fields = "__all__"  #
-class AssetDataSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AssetData  
-        fields = "__all__"  
+            return f"{obj.first_name} {obj.last_name}" 
 
 class CustomerDataSerializer(serializers.ModelSerializer):
     class Meta:
