@@ -48,6 +48,7 @@ class ExternalGoodsIssueData(models.Model):
     issued_by = models.CharField(max_length=255)
     item_name = models.CharField(max_length=255)
     item_quantity = models.PositiveIntegerField()
+    warehouse_location = models.CharField(max_length=255)
     class Meta:
         managed = False
         db_table = '"operations"."v_external_goods_issue"'
