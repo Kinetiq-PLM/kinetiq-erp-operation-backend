@@ -64,7 +64,7 @@ class sendToDistributionView(viewsets.ModelViewSet):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class getWarehouseIDView(viewsets.ModelViewSet):
-    queryset = getWarehouseIDData.objects.all()
+    queryset = getWarehouseIDData.objects.exclude(warehouse_location__startswith='ARCHIVED')
     serializer_class = getWarehouseIDSerializer
     
 

@@ -167,7 +167,7 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
                     invoice_id, purchase_id, ar_credit_memo, status,
                     posting_date, delivery_date, document_date, buyer,
                     owner, delivery_note, initial_amount, discount_rate,
-                    discount_amount, freight, tax_rate, tax_amount, transaction_cost,
+                    discount_amount, freight, tax_rate, tax_amount, transaction_cost
                 ) VALUES (%s, %s, %s, %s,
                         %s, %s, %s, %s,
                         %s, %s, %s, %s,
