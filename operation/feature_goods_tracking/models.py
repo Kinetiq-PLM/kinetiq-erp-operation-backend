@@ -132,7 +132,7 @@ class DocumentItems(models.Model):
     item_id = models.CharField(max_length=255, null=True, blank=True)
     item_price = models.DecimalField(max_digits=10, decimal_places=2)
     item_no = models.CharField(max_length=255, unique=True, blank=False, null=True)
-    ar_discount = models.DecimalField(max_digits=10, decimal_places=2)
+    ar_discount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     quantity = models.IntegerField(default=0)
     total = models.DecimalField(max_digits=10, decimal_places=2)
     manuf_date = models.DateField(null=True)
