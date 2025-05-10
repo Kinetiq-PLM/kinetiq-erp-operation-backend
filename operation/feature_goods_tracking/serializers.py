@@ -35,9 +35,23 @@ class GoodsTrackingDataSerializer(serializers.ModelSerializer):
     employee_name = serializers.SerializerMethodField()
     dept_name = serializers.SerializerMethodField()
     document_items = DocumentItemsSerializer(many=True) 
-    invoice_amount = serializers.SerializerMethodField()
-    invoice_date = serializers.SerializerMethodField()
-    invoice_id = serializers.SerializerMethodField()
+    invoice_id = serializers.PrimaryKeyRelatedField(
+        queryset=SalesInvoiceData.objects.all(),
+        allow_null=True,
+        required=False
+    )
+
+    # Keep these as read-only display fields
+    invoice_amount = serializers.DecimalField(
+        source='invoice_id.total_amount',
+        max_digits=10,
+        decimal_places=2,
+        read_only=True
+    )
+    invoice_date = serializers.DateTimeField(
+        source='invoice_id.invoice_date',
+        read_only=True
+    )
     document_items = serializers.SerializerMethodField()
 
     def get_document_items(self, obj):
@@ -76,23 +90,7 @@ class GoodsTrackingDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = GoodsTrackingData
         fields = "__all__"  
-    def get_invoice_id(self, obj):
-        try:
-            return obj.invoice_id.invoice_id
-        except (SalesInvoiceData.DoesNotExist, AttributeError):
-            return None
 
-    def get_invoice_amount(self, obj):
-        try:
-            return obj.invoice_id.total_amount
-        except (SalesInvoiceData.DoesNotExist, AttributeError):
-            return None
-
-    def get_invoice_date(self, obj):
-        try:
-            return obj.invoice_id.invoice_date
-        except (SalesInvoiceData.DoesNotExist, AttributeError):
-            return None
     def get_vendor_name(self, obj):
         # Ensure that vendor is not None before accessing vendor_name
         if obj.vendor_code:

@@ -21,7 +21,7 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         document_id = kwargs.get('document_id') or kwargs.get('pk')
         instance = self.get_object()
-
+        
         # Update the main document data
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
