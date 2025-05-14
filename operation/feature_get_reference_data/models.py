@@ -43,6 +43,7 @@ class EmployeeData(models.Model):
     dept_id = models.ForeignKey(DepartmentData, db_column="dept_id", on_delete=models.SET_NULL, null=True, blank=True)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
+    position_id = models.CharField(max_length=255)
     class Meta:
         managed = False
         db_table = '"human_resources"."employees"'
