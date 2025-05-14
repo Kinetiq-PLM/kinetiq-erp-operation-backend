@@ -25,10 +25,9 @@ class updateDeliveryRequestView(viewsets.ModelViewSet):
         try:
             data = request.data
             warehouse_id = data.get('warehouse_id')
-            delivery_id = data.get('delivery_id')  # optional
+            delivery_id = data.get('delivery_id') 
 
             with connection.cursor() as cursor:
-                # Check if record exists
                 cursor.execute("""
                     SELECT 1 FROM operations.document_items
                     WHERE external_id = %s
@@ -36,7 +35,6 @@ class updateDeliveryRequestView(viewsets.ModelViewSet):
                 if cursor.fetchone() is None:
                     return Response({"error": "Record not found"}, status=status.HTTP_404_NOT_FOUND)
 
-                # Update the record
                 cursor.execute("""
                     UPDATE operations.document_items
                     SET warehouse_id = %s
@@ -78,7 +76,6 @@ class ExternalModuleProductView(viewsets.ModelViewSet):
         try:
             with connection.cursor() as cursor:
 
-                # Get all existing production_order_detail_ids from external module table
                 cursor.execute("""
                     SELECT external_id
                     FROM operations.document_items
@@ -86,21 +83,17 @@ class ExternalModuleProductView(viewsets.ModelViewSet):
                 """)
                 existing_ids = set(row[0] for row in cursor.fetchall())
 
-                # Get all production_order_detail_ids from production orders
                 cursor.execute("""
                     SELECT production_order_detail_id
                     FROM production.production_orders_details
                 """)
                 all_ids = set(row[0] for row in cursor.fetchall())
 
-                # Determine which IDs are missing
                 missing_ids = all_ids - existing_ids
 
-                # Insert missing entries into external_module_product_order and document_items
                 inserted_count = 0
                 today = datetime.date.today()
                 for pid in missing_ids:
-                    # Insert into document_items and get generated content_id
                     cursor.execute("""
                         INSERT INTO operations.document_items(
                             external_id,
@@ -115,13 +108,6 @@ class ExternalModuleProductView(viewsets.ModelViewSet):
                     generated_external_id = cursor.fetchone()[0]
                     inserted_count += 1
                     
-                    # Insert into document_items with the generated external_id
-                    #cursor.execute("""
-                    #    INSERT INTO operations.document_items (
-                    #        external_id
-                    #    )
-                    #    VALUES (%s);
-                    #""", [generated_external_id])
 
                 return Response({
                     'status': 'success',
@@ -162,9 +148,8 @@ class ExternalModuleProductView(viewsets.ModelViewSet):
         try:
             data = request.data
             
-            # Ensure data is a list
             if not isinstance(data, list):
-                data = [data]  # Convert single object to list
+                data = [data]  
             
             updated = 0
             errors = []

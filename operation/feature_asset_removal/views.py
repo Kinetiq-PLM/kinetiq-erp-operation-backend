@@ -16,9 +16,9 @@ class sendToManagementView(viewsets.ModelViewSet):
 
     def create(self, request):
         try:
-            serializer = self.serializer_class(data=request.data)  # Validate input
+            serializer = self.serializer_class(data=request.data)  
             if serializer.is_valid():
-                serializer.save()  # Insert into DB
+                serializer.save()  
                 return Response(
                     {"message": "Inserted successfully", "data": serializer.data},
                     status=status.HTTP_201_CREATED

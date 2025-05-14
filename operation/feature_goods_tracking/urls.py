@@ -9,7 +9,7 @@ router.register(r'document-item', DocumentItemsViewSet, basename='document-item-
 router.register(r'create-items', createDocumentItem, basename='create-items')
 router.register(r'sales-invoice', SalesInvoiceView)
 urlpatterns = [
-    path("operation/", include(router.urls)),  # Base API path for viewsets
+    path("operation/", include(router.urls)),  
     path('operation/next-document-info/', get_next_document_info, name='next-document-info'),
     path('operation/get-item-options/', get_item_options, name='get-item-options'),
 ]

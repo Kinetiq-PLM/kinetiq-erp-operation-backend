@@ -21,8 +21,7 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         document_id = kwargs.get('document_id') or kwargs.get('pk')
         instance = self.get_object()
-        
-        # Update the main document data
+
         serializer = self.get_serializer(instance, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
@@ -40,7 +39,7 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
             cursor.execute("SELECT MAX(CAST(document_no AS INTEGER)) FROM operations.document_header")
             last_document_no = cursor.fetchone()[0] or 0
 
-            cursor.execute("""
+            cursor.execute(r"""
                 SELECT MAX(CAST(SUBSTRING(ar_credit_memo FROM '\d+$') AS INTEGER))
                 FROM operations.document_header
                 WHERE ar_credit_memo LIKE 'AR-%'
@@ -65,14 +64,11 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
         try:
             cursor = connection.cursor()
             inserted_productdocu_ids = {}
-            # 1. Get next available document_id and transaction_id
             next_document_no, next_transaction_id = get_next_ids()
 
-            # Set the document_id and transaction_id in the request data
             data['document_no'] = next_document_no
             data['transaction_id'] = next_transaction_id
 
-            # 2. Insert into product_document_items if product_id exists
             for item in document_items:
                 product_id = item.get('product_id')
                 if product_id:
@@ -86,9 +82,8 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
                         item.get('expiry_date')
                     ])
                     productdocu_id = cursor.fetchone()[0]
-                    inserted_productdocu_ids[item.get('temp_id')] = productdocu_id  # use temp_id as reference
+                    inserted_productdocu_ids[item.get('temp_id')] = productdocu_id  
 
-            # 3. Insert into document_items
             inserted_doc_item_ids = []
             for item in document_items:
                 productdocu_id = inserted_productdocu_ids.get(item.get('temp_id')) or item.get('productdocu_id')
@@ -109,7 +104,6 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
                 ])
                 inserted_doc_item_ids.append(cursor.fetchone()[0])
 
-            # 4. Insert into document_header (GoodsTrackingData)
             cursor.execute("""
                 INSERT INTO operations.document_header (
                     document_type, transaction_id, document_no, status, posting_date,
@@ -123,8 +117,8 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
                 RETURNING document_id
             """, [
                 data.get('document_type'),
-                next_transaction_id,  # use the incremented transaction_id
-                next_document_no,     # use the incremented document_no
+                next_transaction_id,  
+                next_document_no,     
                 data.get('status', 'Draft'),
                 data.get('posting_date'),
                 data.get('transaction_cost'),
@@ -160,7 +154,6 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
             cursor = connection.cursor()
             inserted_productdocu_ids = {}
 
-            #Create document_header
             cursor.execute("""
                 INSERT INTO operations.document_header (
                     document_type, vendor_code, document_no, transaction_id,
@@ -236,13 +229,11 @@ class GoodsTrackingDataViewSet(viewsets.ModelViewSet):
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class DocumentItemsViewSet(viewsets.ModelViewSet):
-    """View to handle CRUD operations for Document Items"""
     queryset = DocumentItems.objects.all()
     serializer_class = DocumentItemsSerializer
     lookup_field = "content_id"
     
     def create(self, request, *args, **kwargs):
-        """Handle the creation of Document Items."""
         try:
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
@@ -256,12 +247,10 @@ class DocumentItemsViewSet(viewsets.ModelViewSet):
             return Response({"error": "An unexpected error occurred", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     def update(self, request, *args, **kwargs):
-        """Handle the update of Document Items."""
-        content_id = kwargs.get('content_id') or kwargs.get('pk')  # The pk of the document item being updated
+        content_id = kwargs.get('content_id') or kwargs.get('pk')  
         try:
             instance = self.get_object()
 
-            # Update the main document item data
             serializer = self.get_serializer(instance, data=request.data, partial=True)
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -270,16 +259,14 @@ class DocumentItemsViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         
         except ValidationError as e:
-            # If there are validation errors, return them as a response
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         
         except Exception as e:
-            # Catch all other exceptions and return an error response
             return Response({"error": "An unexpected error occurred", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class createDocumentItem(viewsets.ViewSet):
-    queryset = DocumentItems.objects.none()  # Dummy queryset
+    queryset = DocumentItems.objects.none()  
     serializer_class = DocumentItemsSerializer
 
 

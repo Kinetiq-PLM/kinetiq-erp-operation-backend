@@ -16,7 +16,6 @@ class DeliveryReceiptView(viewsets.ModelViewSet):
         try:
             with connection.cursor() as cursor:
 
-                # Get all existing delivery_receipt_id from document items module table
                 cursor.execute("""
                     SELECT external_id 
                     FROM operations.document_items 
@@ -24,20 +23,16 @@ class DeliveryReceiptView(viewsets.ModelViewSet):
                 """)
                 existing_ids = set(row[0] for row in cursor.fetchall())
 
-                # Get all production_order_detail_ids from distribution delivery_receipt
                 cursor.execute("""
                     SELECT delivery_receipt_id
                     FROM distribution.delivery_receipt
                 """)
                 all_ids = set(row[0] for row in cursor.fetchall())
 
-                # Determine which IDs are missing
                 missing_ids = all_ids - existing_ids
 
-                # Insert missing entries into document_items
                 inserted_count = 0
                 for pid in missing_ids:
-                    # Insert into external_module_product_order and get generated external_id
                     cursor.execute("""
                         INSERT INTO operations.document_items(
                             external_id
@@ -69,7 +64,6 @@ class BillingReceiptView(viewsets.ModelViewSet):
     def sync_billingreceipt(self, request):
         try:
             with connection.cursor() as cursor:
-                # Get all existing billing_receipt_id from document items module table
                 cursor.execute("""
                     SELECT external_id
                     FROM operations.document_items
@@ -78,20 +72,16 @@ class BillingReceiptView(viewsets.ModelViewSet):
                 existing_ids = set(row[0] for row in cursor.fetchall())
 
 
-                # Get all billing_receipt_id from distribution billing_receipt
                 cursor.execute("""
                     SELECT billing_receipt_id
                     FROM distribution.billing_receipt
                 """)
                 all_ids = set(row[0] for row in cursor.fetchall())
 
-                # Determine which IDs are missing
                 missing_ids = all_ids - existing_ids
 
-                # Insert missing entries into external_module_product_order and document_items
                 inserted_count = 0
                 for pid in missing_ids:
-                    # Insert into external_module_product_order and get generated external_id
                     cursor.execute("""
                         INSERT INTO operations.document_items(
                             external_id
@@ -122,7 +112,6 @@ class DeliveryReworkOrderView(viewsets.ModelViewSet):
     def sync_deliveryreworkorder(self, request):
         try:
             with connection.cursor() as cursor:
-                # Get all existing rework_id from external module table
                 cursor.execute("""
                     SELECT external_id
                     FROM operations.document_items
@@ -131,20 +120,16 @@ class DeliveryReworkOrderView(viewsets.ModelViewSet):
                 existing_ids = set(row[0] for row in cursor.fetchall())
 
 
-                # Get all rework_id from distribution rework_order
                 cursor.execute("""
                     SELECT rework_id
                     FROM distribution.rework_order
                 """)
                 all_ids = set(row[0] for row in cursor.fetchall())
 
-                # Determine which IDs are missing
                 missing_ids = all_ids - existing_ids
 
-                # Insert missing entries into external_module_product_order and document_items
                 inserted_count = 0
                 for pid in missing_ids:
-                    # Insert into external_module_product_order and get generated external_id
                     cursor.execute("""
                         INSERT INTO operations.document_items(
                             external_id
@@ -175,7 +160,6 @@ class ExternalGoodsIssueView(viewsets.ModelViewSet):
     def sync_deliverygoodsissue(self, request):
         try:
             with connection.cursor() as cursor:
-                # Get all existing goods_issue_id from external module table
                 cursor.execute("""
                     SELECT external_id
                     FROM operations.document_items
@@ -184,20 +168,16 @@ class ExternalGoodsIssueView(viewsets.ModelViewSet):
                 existing_ids = set(row[0] for row in cursor.fetchall())
 
 
-                # Get all rework_id from distribution rework_order
                 cursor.execute("""
                     SELECT goods_issue_id
                     FROM distribution.goods_issue
                 """)
                 all_ids = set(row[0] for row in cursor.fetchall())
 
-                # Determine which IDs are missing
                 missing_ids = all_ids - existing_ids
 
-                # Insert missing entries into external_module_product_order and document_items
                 inserted_count = 0
                 for pid in missing_ids:
-                    # Insert into external_module_product_order and get generated external_id
                     cursor.execute("""
                         INSERT INTO operations.document_items(
                             external_id

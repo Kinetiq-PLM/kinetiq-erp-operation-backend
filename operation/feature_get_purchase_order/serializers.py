@@ -21,7 +21,7 @@ class PurchaseRequestSerializer(serializers.ModelSerializer):
 class VendorDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = VendorData
-        fields = ['vendor_code', 'company_name']  # add other fields as needed
+        fields = ['vendor_code', 'company_name']  
 
 
 class QuotationContentsSerializer(serializers.ModelSerializer):

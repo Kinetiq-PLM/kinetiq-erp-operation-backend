@@ -41,7 +41,6 @@ class GoodsTrackingDataSerializer(serializers.ModelSerializer):
         required=False
     )
 
-    # Keep these as read-only display fields
     invoice_amount = serializers.DecimalField(
         source='invoice_id.total_amount',
         max_digits=10,
@@ -55,17 +54,13 @@ class GoodsTrackingDataSerializer(serializers.ModelSerializer):
     document_items = serializers.SerializerMethodField()
 
     def get_document_items(self, obj):
-        # Get all document items
         doc_items = obj.document_items.all()
         
-        # Collect all unique item_ids
         item_ids = [item.item_id for item in doc_items if item.item_id]
         
-        # Fetch all related ItemData in one query
         items_data = ItemData.objects.filter(item_id__in=item_ids)
         items_dict = {item.item_id: item for item in items_data}
         
-        # Build the result
         result = []
         for doc_item in doc_items:
             item_data = items_dict.get(doc_item.item_id)
@@ -92,7 +87,6 @@ class GoodsTrackingDataSerializer(serializers.ModelSerializer):
         fields = "__all__"  
 
     def get_vendor_name(self, obj):
-        # Ensure that vendor is not None before accessing vendor_name
         if obj.vendor_code:
             return obj.vendor_code.company_name
         return None

@@ -13,7 +13,7 @@ class VendorDataSerializer(serializers.ModelSerializer):
 class DepartmentDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = DepartmentData  
-        fields = "__all__"  #
+        fields = "__all__"  
         
 class EmployeeDataSerializer(serializers.ModelSerializer):
     employee_name = serializers.SerializerMethodField()

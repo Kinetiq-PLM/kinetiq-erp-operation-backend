@@ -2,7 +2,6 @@ from django.db import models
 from feature_get_reference_data.models import *
 import datetime
 from decimal import Decimal
-# Create your models here.
 
 class ItemData(models.Model):
     quotation_content_id = models.CharField(max_length=255, primary_key=True)
@@ -48,7 +47,6 @@ def get_default_employee():
     try:
         return None
     except EmployeeData.DoesNotExist:
-        # Return just the ID (string) instead of an EmployeeData object
         return None
 class SalesInvoiceData(models.Model):
     invoice_id = models.CharField(max_length=255, primary_key=True)
@@ -72,14 +70,13 @@ class GoodsTrackingData(models.Model):
         null=True, 
         blank=True
     )
-    #Main GT UI
     transaction_id = models.CharField(max_length=255, null=False)
     document_no = models.CharField(max_length=255, null=True)
     status = models.TextField(choices=status_choice, default="Draft")
     posting_date = models.DateField(default=datetime.date.today, editable=True)
     transaction_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     delivery_note = models.CharField(max_length=255)
-    #Vendor Container
+
     vendor_code = models.ForeignKey(
         VendorData, 
         db_column="vendor_code",
@@ -96,11 +93,11 @@ class GoodsTrackingData(models.Model):
         null=True, 
         blank=True,
         default=None
-    ) #Owner
-    #Document Details
+    ) 
+
     delivery_date = models.DateField(default=datetime.date.today)
     document_date = models.DateField(default=datetime.date.today)
-    #Cost Details    
+
     initial_amount = models.DecimalField(max_digits=10, decimal_places=2)
     discount_rate = models.DecimalField(max_digits=5, decimal_places=2)
     discount_amount = models.DecimalField(max_digits=10, decimal_places=2)
@@ -128,7 +125,7 @@ class DocumentItems(models.Model):
         null=True, 
         blank=True,
         related_name="document_items"
-    ) #this is connected to Goods Tracking data with many to one relationship it is possible that goods tracking data have many document_items
+    ) 
     item_id = models.CharField(max_length=255, null=True, blank=True)
     item_price = models.DecimalField(max_digits=10, decimal_places=2)
     item_no = models.CharField(max_length=255, unique=True, blank=False, null=True)
@@ -137,7 +134,7 @@ class DocumentItems(models.Model):
     total = models.DecimalField(max_digits=10, decimal_places=2)
     manuf_date = models.DateField(null=True)
     expiry_date = models.DateField(null=True)
-    warehouse_id = models.CharField(max_length=255, null=True)
+    warehouse_id = models.CharField(max_length=255, null=True, blank=True)
     class Meta:
         managed = False
         db_table = '"operations"."document_items"'
@@ -146,6 +143,5 @@ class DocumentItems(models.Model):
     def __str__(self):
         return self.content_id
     def get_item_data(self):
-        """Returns all ItemData records matching this item_id"""
         return ItemData.objects.filter(item_id=self.item_id)
 

@@ -2,7 +2,6 @@ from django.db import models
 from django.db.models import Case, When, Value, IntegerField
 
 # Create your models here.
-#class DeliveryApprovalData(models.Model):
 class DeliveryApprovalData(models.Model):
     approval_choice = [("Approved", "Approved"), ("Pending", "Pending"), ("Rejected", "Rejected")]
     approval_request_id = models.CharField(max_length=255, primary_key=True)

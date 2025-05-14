@@ -2,7 +2,6 @@ from django.db import models
 
 import datetime
 
-# Create your models here.
 class InternalTransferDeliveryRequestData(models.Model):
     delivery_id = models.CharField(max_length=255, primary_key=True)
     delivery_type = models.CharField(max_length=255)
@@ -42,8 +41,6 @@ class getWarehouseIDData(models.Model):
             managed = False
             db_table = '"admin"."warehouse"'
 
-#Rework Order
-#order id, reason for rework, rework, quantity
 class ProductionOrderData(models.Model):
     production_order_detail_id = models.CharField(max_length=255, primary_key=True, editable = False)
     actual_quantity = models.PositiveIntegerField()

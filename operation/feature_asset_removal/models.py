@@ -1,7 +1,6 @@
 from django.db import models
 import datetime
 
-# Create your models here.
 class AssetRemovalData(models.Model):
     status_choice = [("Approved", "Approved"), ("Pending", "Pending")]
     report_id = models.CharField(max_length=25, primary_key=True)
